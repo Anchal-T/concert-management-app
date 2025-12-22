@@ -65,17 +65,17 @@ export function VenuesList() {
     <div className="bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
       <Table>
         <TableHeader>
-          <TableTableRow>
+          <TableRow>
             <TableHead>Venue Name</TableHead>
             <TableHead>Location</TableHead>
             <TableHead>Capacity</TableHead>
             <TableHead>Address</TableHead>
             <TableHead className="text-right">Actions</TableHead>
-          </TableTableRow>
+          </TableRow>
         </TableHeader>
         <TableBody>
           {venues.map((venue) => (
-            <TableTableRow key={venue.id}>
+            <TableRow key={venue.id}>
               <TableCell className="font-medium text-black dark:text-white flex items-center">
                 <MapPin className="w-4 h-4 mr-2 text-zinc-400" />
                 {venue.name}
