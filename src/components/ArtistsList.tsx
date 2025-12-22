@@ -2,16 +2,30 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { User, Trash2, Edit2, Loader2, Music } from 'lucide-react';
+import { 
+  User, 
+  Trash2, 
+  Edit2, 
+  Loader2, 
+  Music, 
+  MoreVertical,
+  Star,
+  ExternalLink
+} from 'lucide-react';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function ArtistsList() {
   const [artists, setArtists] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   const fetchArtists = async () => {
     setLoading(true);
@@ -32,74 +46,113 @@ export function ArtistsList() {
     fetchArtists();
   }, []);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this artist?')) return;
-
+  const handleDelete = async (id: string, name: string) => {
     const { error } = await supabase.from('artists').delete().eq('id', id);
 
     if (error) {
-      toast.error('Failed to delete artist');
+      toast.error(`Failed to delete ${name}`);
     } else {
-      toast.success('Artist deleted');
+      toast.success(`${name} removed from roster`);
       fetchArtists();
     }
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-20">
-        <Loader2 className="w-8 h-8 animate-spin text-zinc-400" />
+      <div className="flex flex-col justify-center items-center py-32 gap-4">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        <p className="text-muted-foreground animate-pulse font-medium">Loading Artists...</p>
       </div>
     );
   }
 
   if (artists.length === 0) {
     return (
-      <div className="text-center py-20 bg-white dark:bg-zinc-900 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800">
-        <Music className="w-12 h-12 mx-auto text-zinc-300 mb-4" />
-        <h3 className="text-lg font-medium text-black dark:text-white">No artists found</h3>
-        <p className="text-zinc-500 mt-1">Add your first artist to get started.</p>
+      <div className="text-center py-32 bg-card rounded-3xl border border-dashed border-border flex flex-col items-center justify-center">
+        <div className="w-16 h-16 rounded-2xl bg-accent flex items-center justify-center mb-6">
+          <Music className="w-8 h-8 text-muted-foreground" />
+        </div>
+        <h3 className="text-xl font-bold">No artists found</h3>
+        <p className="text-muted-foreground mt-2 max-w-xs mx-auto">
+          Start by adding a new artist to your professional roster.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
       {artists.map((artist) => (
-        <Card key={artist.id} className="overflow-hidden group hover:shadow-lg transition-shadow duration-300">
-          <div className="aspect-video relative bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden">
+        <Card key={artist.id} className="overflow-hidden bg-card border-border hover:border-primary/30 transition-all duration-300 group shadow-sm hover:shadow-xl hover:shadow-primary/5 rounded-3xl">
+          <div className="aspect-[16/10] relative overflow-hidden bg-accent">
             {artist.image_url ? (
               <img
                 src={artist.image_url}
                 alt={artist.name}
-                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700"
               />
             ) : (
-              <User className="w-12 h-12 text-zinc-300" />
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent">
+                <Music className="w-16 h-16 text-primary/20" />
+              </div>
             )}
-            <div className="absolute top-2 right-2 flex gap-1 transform translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-              <Button variant="secondary" size="icon" className="h-8 w-8 bg-white/90 dark:bg-zinc-900/90" onClick={() => {}}>
-                <Edit2 className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300" />
-              </Button>
-              <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDelete(artist.id)}>
-                <Trash2 className="w-3.5 h-3.5" />
-              </Button>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6">
+              <div className="flex items-center gap-2 mb-1">
+                <Badge className="bg-primary/20 text-primary-foreground border-primary/30 backdrop-blur-md">
+                  {artist.genre || 'Vocalist'}
+                </Badge>
+                <div className="flex items-center gap-0.5 ml-auto text-amber-400">
+                  <Star className="w-3 h-3 fill-current" />
+                  <span className="text-[10px] font-bold">PRO</span>
+                </div>
+              </div>
+              <h3 className="text-2xl font-black text-white tracking-tight">{artist.name}</h3>
+            </div>
+            
+            <div className="absolute top-4 right-4">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-md border-white/10 opacity-0 group-hover:opacity-100 transition-all">
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="bg-popover border-border rounded-xl">
+                  <DropdownMenuItem className="gap-2 cursor-pointer">
+                    <Edit2 className="w-4 h-4" /> Edit Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="gap-2 cursor-pointer">
+                    <ExternalLink className="w-4 h-4" /> Public Portfolio
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    className="gap-2 text-destructive cursor-pointer focus:text-destructive"
+                    onClick={() => handleDelete(artist.id, artist.name)}
+                  >
+                    <Trash2 className="w-4 h-4" /> Remove Artist
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
-          <CardHeader className="pb-2">
-            <div className="flex justify-between items-start">
-              <div>
-                <CardTitle className="text-xl">{artist.name}</CardTitle>
-                <CardDescription className="text-zinc-500 font-medium uppercase tracking-wider text-xs mt-1">
-                  {artist.genre || 'Various'}
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 line-clamp-3 min-h-[4.5rem]">
-              {artist.bio || 'No biography available for this artist.'}
+          
+          <CardContent className="p-6">
+            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3 mb-6 min-h-[4.5rem]">
+              {artist.bio || 'Professional artist profile currently being updated. Check back soon for full biography and experience details.'}
             </p>
+            <div className="flex items-center justify-between pt-4 border-t border-border">
+              <div className="flex -space-x-2">
+                {[1,2,3].map(i => (
+                  <div key={i} className="w-7 h-7 rounded-full border-2 border-card bg-accent flex items-center justify-center text-[10px] font-bold">
+                    {String.fromCharCode(64 + i)}
+                  </div>
+                ))}
+                <div className="w-7 h-7 rounded-full border-2 border-card bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                  +4
+                </div>
+              </div>
+              <Button variant="ghost" size="sm" className="text-primary font-bold hover:bg-primary/10 rounded-xl">
+                View Details
+              </Button>
+            </div>
           </CardContent>
         </Card>
       ))}
