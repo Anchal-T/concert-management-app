@@ -69,12 +69,12 @@ export function ScheduleConcertDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200">
-          <Plus className="w-4 h-4 mr-2" />
-          Schedule Concert
+        <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shadow-lg shadow-primary/20 px-6">
+          <Plus className="w-5 h-5 mr-2" />
+          Schedule Event
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] bg-card border-border rounded-3xl">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Schedule New Concert</DialogTitle>
