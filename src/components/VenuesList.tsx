@@ -102,7 +102,7 @@ export function VenuesList() {
                   </Button>
                 </div>
               </TableCell>
-            </TableTableRow>
+            </TableRow>
           ))}
         </TableBody>
       </Table>
