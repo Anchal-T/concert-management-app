@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableTableRow } from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { MapPin, Trash2, Edit2, Loader2, Users } from 'lucide-react';
 import { toast } from 'sonner';
