@@ -3,7 +3,8 @@ import "./globals.css";
 import VisualEditsMessenger from "../visual-edits/VisualEditsMessenger";
 import ErrorReporter from "@/components/ErrorReporter";
 import Script from "next/script";
-import { Navbar } from "@/components/Navbar";
+import { Sidebar } from "@/components/Sidebar";
+import { TopBar } from "@/components/TopBar";
 import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
@@ -17,8 +18,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="antialiased min-h-screen bg-zinc-50 dark:bg-zinc-950">
+    <html lang="en" className="dark">
+      <body className="antialiased min-h-screen bg-background text-foreground overflow-x-hidden">
         <ErrorReporter />
         <Script
           src="https://slelguoygbfzlpylpxfs.supabase.co/storage/v1/object/public/scripts//route-messenger.js"
@@ -30,12 +31,17 @@ export default function RootLayout({
           data-debug="true"
           data-custom-data='{"appName": "YourApp", "version": "1.0.0", "greeting": "hi"}'
         />
-        <Navbar />
-        <main className="pt-20 pb-12">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            {children}
+        
+        <div className="flex min-h-screen">
+          <Sidebar />
+          <div className="flex-1 pl-64">
+            <TopBar />
+            <main className="pt-24 pb-12 px-8 min-h-screen">
+              {children}
+            </main>
           </div>
-        </main>
+        </div>
+
         <Toaster />
         <VisualEditsMessenger />
       </body>
