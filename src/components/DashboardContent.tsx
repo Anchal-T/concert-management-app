@@ -18,9 +18,11 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Loader2,
-  Trello
+  Trello,
+  Settings
 } from 'lucide-react';
 import { format } from 'date-fns';
+import Link from 'next/link';
 import { 
   Table, 
   TableBody, 
@@ -29,6 +31,7 @@ import {
   TableHeader, 
   TableRow 
 } from '@/components/ui/table';
+import { ScheduleConcertDialog } from './ScheduleConcertDialog';
 
 export default function DashboardContent() {
   const [stats, setStats] = useState({
@@ -73,14 +76,16 @@ export default function DashboardContent() {
     switch (status.toLowerCase()) {
       case 'scheduled':
       case 'upcoming':
-        return <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Upcoming</Badge>;
+        return <div className="flex items-center gap-2 text-emerald-500 bg-emerald-500/10 px-2.5 py-1 rounded-full text-[11px] font-medium border border-emerald-500/20"><div className="w-1 h-1 rounded-full bg-emerald-500" /> Upcoming</div>;
       case 'confirmed':
       case 'ongoing':
-        return <Badge variant="secondary" className="bg-blue-500/10 text-blue-500 border-blue-500/20 gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Ongoing</Badge>;
+        return <div className="flex items-center gap-2 text-blue-500 bg-blue-500/10 px-2.5 py-1 rounded-full text-[11px] font-medium border border-blue-500/20"><div className="w-1 h-1 rounded-full bg-blue-500" /> Ongoing</div>;
       case 'cancelled':
-        return <Badge variant="secondary" className="bg-rose-500/10 text-rose-500 border-rose-500/20 gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Cancelled</Badge>;
+        return <div className="flex items-center gap-2 text-rose-500 bg-rose-500/10 px-2.5 py-1 rounded-full text-[11px] font-medium border border-rose-500/20"><div className="w-1 h-1 rounded-full bg-rose-500" /> Cancelled</div>;
+      case 'completed':
+        return <div className="flex items-center gap-2 text-zinc-400 bg-zinc-400/10 px-2.5 py-1 rounded-full text-[11px] font-medium border border-zinc-400/20"><div className="w-1 h-1 rounded-full bg-zinc-400" /> Completed</div>;
       default:
-        return <Badge variant="secondary" className="bg-zinc-500/10 text-zinc-500 border-zinc-500/20 gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-zinc-500" /> {status}</Badge>;
+        return <div className="flex items-center gap-2 text-zinc-500 bg-zinc-500/10 px-2.5 py-1 rounded-full text-[11px] font-medium border border-zinc-500/20"><div className="w-1 h-1 rounded-full bg-zinc-500" /> {status}</div>;
     }
   };
 
@@ -94,26 +99,28 @@ export default function DashboardContent() {
   }
 
   return (
-    <div className="space-y-10 max-w-[1600px] mx-auto">
+    <div className="space-y-8 max-w-[1600px] mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Event Overview</h1>
-          <p className="text-muted-foreground mt-1">Monitor and manage your concert operations in real-time.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Event Overview</h1>
         </div>
-        <div className="flex items-center gap-2 bg-accent/50 p-1 rounded-xl">
+        <div className="flex items-center gap-2 bg-accent/30 p-1 rounded-lg">
           {['1D', '7D', '1M', '3M', 'Custom'].map((period) => (
             <Button 
               key={period} 
               variant={period === '7D' ? 'secondary' : 'ghost'} 
               size="sm" 
-              className={period === '7D' ? 'bg-background shadow-sm' : 'text-muted-foreground'}
+              className={cn(
+                "h-8 px-3 text-xs font-medium rounded-md transition-all",
+                period === '7D' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+              )}
             >
               {period}
             </Button>
           ))}
           <div className="w-px h-4 bg-border mx-1" />
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Trello className="w-4 h-4" />
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-md">
+            <Settings className="w-4 h-4 text-muted-foreground" />
           </Button>
         </div>
       </div>
@@ -122,101 +129,103 @@ export default function DashboardContent() {
         <StatCard 
           title="Total events" 
           value={stats.total.toLocaleString()} 
-          delta="+10%" 
+          delta="10%" 
           isUp={true} 
-          icon={<Calendar className="w-5 h-5" />} 
+          icon={<div className="w-2 h-2 rounded-full bg-amber-500" />} 
           color="amber"
         />
         <StatCard 
           title="Upcoming events" 
           value={stats.upcoming.toLocaleString()} 
-          delta="+12%" 
+          delta="12%" 
           isUp={true} 
-          icon={<Clock className="w-5 h-5" />} 
+          icon={<div className="w-2 h-2 rounded-full bg-blue-500" />} 
           color="blue"
         />
         <StatCard 
           title="Ongoing events" 
           value={stats.ongoing.toLocaleString()} 
-          delta="-12%" 
+          delta="12%" 
           isUp={false} 
-          icon={<CheckCircle2 className="w-5 h-5" />} 
+          icon={<div className="w-2 h-2 rounded-full bg-emerald-500" />} 
           color="emerald"
         />
         <StatCard 
           title="Cancelled events" 
           value={stats.cancelled.toLocaleString()} 
-          delta="+5%" 
-          isUp={true} 
-          icon={<XCircle className="w-5 h-5" />} 
+          delta="5%" 
+          isUp={false} 
+          icon={<div className="w-2 h-2 rounded-full bg-rose-500" />} 
           color="rose"
         />
       </div>
 
-      <div className="bg-card rounded-3xl border border-border overflow-hidden shadow-sm">
-        <div className="p-6 border-b border-border flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="flex items-center gap-4">
-            <h2 className="text-xl font-bold">Events ({concerts.length})</h2>
+      <div className="bg-card/50 rounded-2xl border border-border overflow-hidden">
+        <div className="p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="flex items-center gap-6">
+            <h2 className="text-lg font-bold">Events ({concerts.length})</h2>
             <div className="relative group min-w-[300px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input 
                 type="text" 
                 placeholder="Search by event, location"
-                className="w-full bg-accent/30 border border-transparent focus:border-primary/20 rounded-xl py-2 pl-10 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground"
+                className="w-full bg-accent/20 border border-transparent focus:border-primary/20 rounded-lg py-2 pl-10 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground"
               />
             </div>
           </div>
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <Button variant="outline" className="rounded-xl flex-1 md:flex-none">
-              <Filter className="w-4 h-4 mr-2" /> Filter
+            <Button variant="outline" className="rounded-lg h-10 px-4 text-sm font-medium bg-accent/20 border-transparent hover:bg-accent/40">
+              Filter <Filter className="w-4 h-4 ml-2" />
             </Button>
-            <Button variant="outline" size="icon" className="rounded-xl h-10 w-10 text-muted-foreground">
+            <Button variant="outline" size="icon" className="rounded-lg h-10 w-10 bg-accent/20 border-transparent hover:bg-accent/40">
               <Upload className="w-4 h-4" />
             </Button>
-            <Button className="rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 flex-1 md:flex-none">
-              <Plus className="w-4 h-4 mr-2" /> Create Event
-            </Button>
+            <ScheduleConcertDialog />
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <Table>
-            <TableHeader className="bg-accent/30">
-              <TableRow className="hover:bg-transparent border-border">
-                <TableHead className="font-semibold px-6 py-4">Event Name</TableHead>
-                <TableHead className="font-semibold px-6 py-4">Date & Time</TableHead>
-                <TableHead className="font-semibold px-6 py-4">Location</TableHead>
-                <TableHead className="font-semibold px-6 py-4 text-right">Ticket Price</TableHead>
-                <TableHead className="font-semibold px-6 py-4">Status</TableHead>
-                <TableHead className="font-semibold px-6 py-4 w-[50px]"></TableHead>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent border-border/50">
+                <TableHead className="font-medium text-muted-foreground px-6 py-3 text-xs uppercase tracking-wider">Event Name</TableHead>
+                <TableHead className="font-medium text-muted-foreground px-6 py-3 text-xs uppercase tracking-wider">Date & Time</TableHead>
+                <TableHead className="font-medium text-muted-foreground px-6 py-3 text-xs uppercase tracking-wider">Location</TableHead>
+                <TableHead className="font-medium text-muted-foreground px-6 py-3 text-xs uppercase tracking-wider">Tickets Sold</TableHead>
+                <TableHead className="font-medium text-muted-foreground px-6 py-3 text-xs uppercase tracking-wider">Status</TableHead>
+                <TableHead className="font-medium text-muted-foreground px-6 py-3 w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {concerts.length > 0 ? (
                 concerts.map((concert) => (
-                  <TableRow key={concert.id} className="group hover:bg-accent/20 border-border transition-colors">
+                  <TableRow key={concert.id} className="group hover:bg-accent/10 border-border/50 transition-colors">
                     <TableCell className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center font-bold text-xs text-primary ring-1 ring-border">
-                          {concert.artist?.name?.charAt(0) || 'E'}
+                      <Link href={`/concerts/${concert.id}`} className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center overflow-hidden">
+                          <img 
+                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${concert.artist?.name}`} 
+                            alt={concert.artist?.name}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
-                        <span className="font-bold whitespace-nowrap">{concert.artist?.name} Live</span>
-                      </div>
+                        <span className="font-bold text-sm group-hover:text-primary transition-colors">{concert.artist?.name} Vs Nashville...</span>
+                      </Link>
                     </TableCell>
-                    <TableCell className="px-6 py-4 text-muted-foreground">
+                    <TableCell className="px-6 py-4 text-sm text-muted-foreground">
                       {format(new Date(concert.date), 'MMM d, h:mm a')}
                     </TableCell>
-                    <TableCell className="px-6 py-4 text-muted-foreground">
+                    <TableCell className="px-6 py-4 text-sm text-muted-foreground">
                       {concert.venue?.name}
                     </TableCell>
-                    <TableCell className="px-6 py-4 text-right font-medium text-foreground">
-                      ${concert.ticket_price}
+                    <TableCell className="px-6 py-4 text-sm text-muted-foreground">
+                      {Math.floor(Math.random() * 5000).toLocaleString()}
                     </TableCell>
                     <TableCell className="px-6 py-4">
                       {getStatusBadge(concert.status)}
                     </TableCell>
                     <TableCell className="px-6 py-4">
-                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
                         <MoreHorizontal className="w-4 h-4" />
                       </Button>
                     </TableCell>
@@ -236,15 +245,26 @@ export default function DashboardContent() {
           </Table>
         </div>
 
-        <div className="p-6 border-t border-border flex items-center justify-between">
+        <div className="p-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" disabled>&lt;</Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 rounded-lg bg-primary text-primary-foreground border-primary hover:bg-primary/90">1</Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 rounded-lg">2</Button>
-            <Button variant="outline" size="sm" className="h-8 w-8 rounded-lg">3</Button>
-            <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg">&gt;</Button>
+            <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg bg-accent/20 border-transparent hover:bg-accent/40" disabled>&lt;</Button>
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((page) => (
+                <Button 
+                  key={page}
+                  variant="outline" 
+                  size="sm" 
+                  className={cn(
+                    "h-8 w-8 rounded-lg text-xs font-medium transition-all",
+                    page === 2 ? "bg-primary text-primary-foreground border-primary" : "bg-accent/20 border-transparent hover:bg-accent/40 text-muted-foreground"
+                  )}
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+            <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg bg-accent/20 border-transparent hover:bg-accent/40">&gt;</Button>
           </div>
-          <p className="text-xs text-muted-foreground">Showing {concerts.length} total events</p>
         </div>
       </div>
     </div>
@@ -259,34 +279,25 @@ function StatCard({ title, value, delta, isUp, icon, color }: {
   icon: React.ReactNode,
   color: 'amber' | 'blue' | 'emerald' | 'rose'
 }) {
-  const colorMap = {
-    amber: 'text-amber-500 bg-amber-500/10',
-    blue: 'text-blue-500 bg-blue-500/10',
-    emerald: 'text-emerald-500 bg-emerald-500/10',
-    rose: 'text-rose-500 bg-rose-500/10',
-  };
-
   return (
-    <Card className="bg-card border-border overflow-hidden group hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-primary/5">
+    <Card className="bg-card/40 border-border/50 overflow-hidden group hover:border-primary/30 transition-all">
       <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className={cn("p-2.5 rounded-xl", colorMap[color])}>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 rounded-lg bg-accent/30">
             {icon}
           </div>
-          <div className={cn(
-            "flex items-center text-[11px] font-bold px-2 py-0.5 rounded-full border",
-            isUp 
-              ? "text-emerald-500 bg-emerald-500/5 border-emerald-500/10" 
-              : "text-rose-500 bg-rose-500/5 border-rose-500/10"
-          )}>
-            {isUp ? <ArrowUpRight className="w-3 h-3 mr-0.5" /> : <ArrowDownRight className="w-3 h-3 mr-0.5" />}
-            {delta}
-            <span className="text-muted-foreground font-normal ml-1">from last week</span>
-          </div>
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
         </div>
-        <div>
-          <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
-          <div className="text-3xl font-black tracking-tight">{value}</div>
+        <div className="space-y-3">
+          <div className="text-3xl font-bold tracking-tight">{value}</div>
+          <div className={cn(
+            "flex items-center text-xs font-medium",
+            isUp ? "text-emerald-500" : "text-rose-500"
+          )}>
+            {isUp ? <ArrowUpRight className="w-3 h-3 mr-1" /> : <ArrowDownRight className="w-3 h-3 mr-1" />}
+            {delta}
+            <span className="text-muted-foreground font-normal ml-1.5">From last week</span>
+          </div>
         </div>
       </CardContent>
     </Card>

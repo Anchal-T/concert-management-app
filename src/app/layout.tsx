@@ -32,11 +32,11 @@ export default function RootLayout({
           data-custom-data='{"appName": "YourApp", "version": "1.0.0", "greeting": "hi"}'
         />
         
-        <div className="flex min-h-screen">
+        <div className="flex min-h-screen bg-[#04070D]">
           <Sidebar />
           <div className="flex-1 pl-64">
             <TopBar />
-            <main className="pt-24 pb-12 px-8 min-h-screen">
+            <main className="pt-20 pb-12 px-8 min-h-screen bg-[#04070D]">
               {children}
             </main>
           </div>

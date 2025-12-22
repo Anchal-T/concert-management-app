@@ -74,76 +74,108 @@ export function ScheduleConcertDialog() {
           Schedule Event
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-card border-border rounded-3xl">
-        <form onSubmit={handleSubmit}>
+      <DialogContent className="sm:max-w-[500px] bg-[#0B101B] border-border rounded-3xl p-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <DialogHeader>
-            <DialogTitle>Schedule New Concert</DialogTitle>
-            <DialogDescription>
-              Link an artist with a venue and set the event details.
+            <DialogTitle className="text-2xl font-bold text-white">Schedule New Event</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Fill in the details below to create a new event in the system.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="artist_id">Artist</Label>
-              <Select name="artist_id" required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Artist" />
-                </SelectTrigger>
-                <SelectContent>
-                  {artists.map((artist) => (
-                    <SelectItem key={artist.id} value={artist.id}>{artist.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="venue_id">Venue</Label>
-              <Select name="venue_id" required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Venue" />
-                </SelectTrigger>
-                <SelectContent>
-                  {venues.map((venue) => (
-                    <SelectItem key={venue.id} value={venue.id}>{venue.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="grid gap-6 py-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="date">Date</Label>
-                <Input id="date" name="date" type="date" required />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="time">Time</Label>
-                <Input id="time" name="time" type="time" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="ticket_price">Ticket Price ($)</Label>
-                <Input id="ticket_price" name="ticket_price" type="number" step="0.01" placeholder="49.99" />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="status">Status</Label>
-                <Select name="status" defaultValue="confirmed">
-                  <SelectTrigger>
-                    <SelectValue />
+                <Label htmlFor="artist_id" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Artist</Label>
+                <Select name="artist_id" required>
+                  <SelectTrigger className="bg-accent/20 border-border rounded-xl h-11 text-white">
+                    <SelectValue placeholder="Select Artist" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">Draft</SelectItem>
-                    <SelectItem value="confirmed">Confirmed</SelectItem>
-                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  <SelectContent className="bg-[#0B101B] border-border">
+                    {artists.map((artist) => (
+                      <SelectItem key={artist.id} value={artist.id}>{artist.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="venue_id" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Venue</Label>
+                <Select name="venue_id" required>
+                  <SelectTrigger className="bg-accent/20 border-border rounded-xl h-11 text-white">
+                    <SelectValue placeholder="Select Venue" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#0B101B] border-border">
+                    {venues.map((venue) => (
+                      <SelectItem key={venue.id} value={venue.id}>{venue.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="date" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Date</Label>
+                <Input
+                  id="date"
+                  name="date"
+                  type="date"
+                  required
+                  className="bg-accent/20 border-border rounded-xl h-11 text-white"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="time" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Time</Label>
+                <Input
+                  id="time"
+                  name="time"
+                  type="time"
+                  className="bg-accent/20 border-border rounded-xl h-11 text-white"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="ticket_price" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Ticket Price ($)</Label>
+                <Input
+                  id="ticket_price"
+                  name="ticket_price"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  className="bg-accent/20 border-border rounded-xl h-11 text-white"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="status" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Status</Label>
+                <Select name="status" defaultValue="Upcoming">
+                  <SelectTrigger className="bg-accent/20 border-border rounded-xl h-11 text-white">
+                    <SelectValue placeholder="Select Status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#0B101B] border-border">
+                    <SelectItem value="Upcoming">Upcoming</SelectItem>
+                    <SelectItem value="Ongoing">Ongoing</SelectItem>
+                    <SelectItem value="Completed">Completed</SelectItem>
+                    <SelectItem value="Cancelled">Cancelled</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={loading || artists.length === 0 || venues.length === 0}>
-              {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Schedule Event
+            <Button 
+              type="submit" 
+              disabled={loading}
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-12 font-bold shadow-lg shadow-primary/20"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Scheduling...
+                </>
+              ) : (
+                'Schedule Event'
+              )}
             </Button>
           </DialogFooter>
         </form>

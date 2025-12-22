@@ -81,10 +81,10 @@ export function ArtistsList() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
       {artists.map((artist) => (
-        <Card key={artist.id} className="overflow-hidden bg-card border-border hover:border-primary/30 transition-all duration-300 group shadow-sm hover:shadow-xl hover:shadow-primary/5 rounded-3xl">
-          <div className="aspect-[16/10] relative overflow-hidden bg-accent">
+        <Card key={artist.id} className="overflow-hidden bg-card/50 border-border/50 hover:border-primary/30 transition-all duration-300 group rounded-2xl">
+          <div className="aspect-square relative overflow-hidden bg-accent/20">
             {artist.image_url ? (
               <img
                 src={artist.image_url}
@@ -92,65 +92,50 @@ export function ArtistsList() {
                 className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent">
-                <Music className="w-16 h-16 text-primary/20" />
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent/20">
+                <Music className="w-12 h-12 text-primary/20" />
               </div>
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6">
-              <div className="flex items-center gap-2 mb-1">
-                <Badge className="bg-primary/20 text-primary-foreground border-primary/30 backdrop-blur-md">
-                  {artist.genre || 'Vocalist'}
-                </Badge>
-                <div className="flex items-center gap-0.5 ml-auto text-amber-400">
-                  <Star className="w-3 h-3 fill-current" />
-                  <span className="text-[10px] font-bold">PRO</span>
-                </div>
-              </div>
-              <h3 className="text-2xl font-black text-white tracking-tight">{artist.name}</h3>
-            </div>
-            
-            <div className="absolute top-4 right-4">
+            <div className="absolute top-3 right-3">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-md border-white/10 opacity-0 group-hover:opacity-100 transition-all">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-black/20 backdrop-blur-md text-white hover:bg-black/40">
                     <MoreVertical className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-popover border-border rounded-xl">
-                  <DropdownMenuItem className="gap-2 cursor-pointer">
-                    <Edit2 className="w-4 h-4" /> Edit Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="gap-2 cursor-pointer">
-                    <ExternalLink className="w-4 h-4" /> Public Portfolio
+                <DropdownMenuContent align="end" className="w-40 bg-card border-border">
+                  <DropdownMenuItem className="gap-2">
+                    <Edit2 className="w-4 h-4" /> Edit Artist
                   </DropdownMenuItem>
                   <DropdownMenuItem 
-                    className="gap-2 text-destructive cursor-pointer focus:text-destructive"
+                    className="gap-2 text-destructive focus:text-destructive"
                     onClick={() => handleDelete(artist.id, artist.name)}
                   >
-                    <Trash2 className="w-4 h-4" /> Remove Artist
+                    <Trash2 className="w-4 h-4" /> Remove
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </div>
-          
-          <CardContent className="p-6">
-            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3 mb-6 min-h-[4.5rem]">
-              {artist.bio || 'Professional artist profile currently being updated. Check back soon for full biography and experience details.'}
-            </p>
-            <div className="flex items-center justify-between pt-4 border-t border-border">
-              <div className="flex -space-x-2">
-                {[1,2,3].map(i => (
-                  <div key={i} className="w-7 h-7 rounded-full border-2 border-card bg-accent flex items-center justify-center text-[10px] font-bold">
-                    {String.fromCharCode(64 + i)}
-                  </div>
-                ))}
-                <div className="w-7 h-7 rounded-full border-2 border-card bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-                  +4
-                </div>
+          <CardContent className="p-5">
+            <div className="space-y-1">
+              <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors truncate">
+                {artist.name}
+              </h3>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="bg-primary/10 text-primary border-transparent text-[10px] px-2 py-0">
+                  {artist.genre || 'Artist'}
+                </Badge>
               </div>
-              <Button variant="ghost" size="sm" className="text-primary font-bold hover:bg-primary/10 rounded-xl">
-                View Details
+            </div>
+            
+            <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
+              <div className="flex items-center gap-1 text-amber-500">
+                <Star className="w-3 h-3 fill-current" />
+                <span className="text-xs font-bold">4.9</span>
+              </div>
+              <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground hover:text-foreground gap-1">
+                View Profile <ExternalLink className="w-3 h-3" />
               </Button>
             </div>
           </CardContent>
