@@ -2,181 +2,297 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, MapPin, Calendar, DollarSign, ArrowUpRight, Music, Plus, Loader2 } from 'lucide-react';
-import Link from 'next/link';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Calendar, 
+  Clock, 
+  XCircle, 
+  CheckCircle2, 
+  Plus, 
+  Filter, 
+  Upload, 
+  Search, 
+  MoreHorizontal,
+  ArrowUpRight,
+  ArrowDownRight,
+  Loader2,
+  Trello
+} from 'lucide-react';
 import { format } from 'date-fns';
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
 
 export default function DashboardContent() {
   const [stats, setStats] = useState({
-    artists: 0,
-    venues: 0,
-    concerts: 0,
-    revenue: 0
+    total: 0,
+    upcoming: 0,
+    ongoing: 0,
+    cancelled: 0
   });
-  const [recentConcerts, setRecentConcerts] = useState<any[]>([]);
+  const [concerts, setConcerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       setLoading(true);
-      const [artistsCount, venuesCount, concertsCount, recentConcertsRes] = await Promise.all([
-        supabase.from('artists').select('*', { count: 'exact', head: true }),
-        supabase.from('venues').select('*', { count: 'exact', head: true }),
-        supabase.from('concerts').select('*', { count: 'exact', head: true }),
-        supabase.from('concerts')
-          .select('*, artist:artists(name), venue:venues(name)')
-          .order('date', { ascending: true })
-          .limit(3)
-      ]);
+      
+      const { data: allConcerts } = await supabase
+        .from('concerts')
+        .select('*, artist:artists(name), venue:venues(name)')
+        .order('date', { ascending: true });
 
-      const { data: revenueData } = await supabase.from('concerts').select('ticket_price');
-      const totalRevenue = revenueData?.reduce((acc, curr) => acc + (curr.ticket_price || 0), 0) || 0;
-
-      setStats({
-        artists: artistsCount.count || 0,
-        venues: venuesCount.count || 0,
-        concerts: concertsCount.count || 0,
-        revenue: totalRevenue
-      });
-      setRecentConcerts(recentConcertsRes.data || []);
+      if (allConcerts) {
+        setConcerts(allConcerts);
+        const upcoming = allConcerts.filter(c => c.status === 'scheduled').length;
+        const ongoing = allConcerts.filter(c => c.status === 'confirmed').length;
+        const cancelled = allConcerts.filter(c => c.status === 'cancelled').length;
+        
+        setStats({
+          total: allConcerts.length,
+          upcoming,
+          ongoing,
+          cancelled
+        });
+      }
+      
       setLoading(false);
     };
 
     fetchDashboardData();
   }, []);
 
+  const getStatusBadge = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'scheduled':
+      case 'upcoming':
+        return <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Upcoming</Badge>;
+      case 'confirmed':
+      case 'ongoing':
+        return <Badge variant="secondary" className="bg-blue-500/10 text-blue-500 border-blue-500/20 gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-blue-500" /> Ongoing</Badge>;
+      case 'cancelled':
+        return <Badge variant="secondary" className="bg-rose-500/10 text-rose-500 border-rose-500/20 gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Cancelled</Badge>;
+      default:
+        return <Badge variant="secondary" className="bg-zinc-500/10 text-zinc-500 border-zinc-500/20 gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-zinc-500" /> {status}</Badge>;
+    }
+  };
+
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-20">
-        <Loader2 className="w-8 h-8 animate-spin text-zinc-400" />
+      <div className="flex flex-col justify-center items-center py-32 gap-4">
+        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+        <p className="text-muted-foreground animate-pulse font-medium">Loading Overview...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-black dark:text-white">Dashboard Overview</h1>
-        <p className="text-zinc-500 mt-1">Welcome back. Here's what's happening with your concerts.</p>
+    <div className="space-y-10 max-w-[1600px] mx-auto">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Event Overview</h1>
+          <p className="text-muted-foreground mt-1">Monitor and manage your concert operations in real-time.</p>
+        </div>
+        <div className="flex items-center gap-2 bg-accent/50 p-1 rounded-xl">
+          {['1D', '7D', '1M', '3M', 'Custom'].map((period) => (
+            <Button 
+              key={period} 
+              variant={period === '7D' ? 'secondary' : 'ghost'} 
+              size="sm" 
+              className={period === '7D' ? 'bg-background shadow-sm' : 'text-muted-foreground'}
+            >
+              {period}
+            </Button>
+          ))}
+          <div className="w-px h-4 bg-border mx-1" />
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Trello className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-zinc-500">Total Artists</CardTitle>
-            <Users className="w-4 h-4 text-zinc-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.artists}</div>
-            <p className="text-xs text-zinc-400 mt-1">Performers in roster</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-zinc-500">Venues</CardTitle>
-            <MapPin className="w-4 h-4 text-zinc-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.venues}</div>
-            <p className="text-xs text-zinc-400 mt-1">Partner locations</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-zinc-500">Upcoming Concerts</CardTitle>
-            <Calendar className="w-4 h-4 text-zinc-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.concerts}</div>
-            <p className="text-xs text-zinc-400 mt-1">Scheduled events</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-zinc-500">Est. Booking Value</CardTitle>
-            <DollarSign className="w-4 h-4 text-zinc-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${stats.revenue.toLocaleString()}</div>
-            <p className="text-xs text-zinc-400 mt-1">Based on base prices</p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        <StatCard 
+          title="Total events" 
+          value={stats.total.toLocaleString()} 
+          delta="+10%" 
+          isUp={true} 
+          icon={<Calendar className="w-5 h-5" />} 
+          color="amber"
+        />
+        <StatCard 
+          title="Upcoming events" 
+          value={stats.upcoming.toLocaleString()} 
+          delta="+12%" 
+          isUp={true} 
+          icon={<Clock className="w-5 h-5" />} 
+          color="blue"
+        />
+        <StatCard 
+          title="Ongoing events" 
+          value={stats.ongoing.toLocaleString()} 
+          delta="-12%" 
+          isUp={false} 
+          icon={<CheckCircle2 className="w-5 h-5" />} 
+          color="emerald"
+        />
+        <StatCard 
+          title="Cancelled events" 
+          value={stats.cancelled.toLocaleString()} 
+          delta="+5%" 
+          isUp={true} 
+          icon={<XCircle className="w-5 h-5" />} 
+          color="rose"
+        />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Upcoming Schedule</CardTitle>
-                <CardDescription>Your next 3 scheduled events</CardDescription>
-              </div>
-              <Link href="/concerts">
-                <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600">
-                  View All <ArrowUpRight className="w-4 h-4 ml-1" />
-                </Button>
-              </Link>
+      <div className="bg-card rounded-3xl border border-border overflow-hidden shadow-sm">
+        <div className="p-6 border-b border-border flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div className="flex items-center gap-4">
+            <h2 className="text-xl font-bold">Events ({concerts.length})</h2>
+            <div className="relative group min-w-[300px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input 
+                type="text" 
+                placeholder="Search by event, location"
+                className="w-full bg-accent/30 border border-transparent focus:border-primary/20 rounded-xl py-2 pl-10 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground"
+              />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentConcerts.length > 0 ? (
-                recentConcerts.map((concert) => (
-                  <div key={concert.id} className="flex items-center p-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800">
-                    <div className="w-10 h-10 rounded-full bg-black dark:bg-white flex items-center justify-center mr-4">
-                      <Music className="w-5 h-5 text-white dark:text-black" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-black dark:text-white truncate">{concert.artist?.name}</p>
-                      <p className="text-xs text-zinc-500 truncate">{concert.venue?.name} • {format(new Date(concert.date), 'MMM d, yyyy')}</p>
-                    </div>
-                    <div className="text-right">
-                      <Badge variant="secondary" className="text-[10px] uppercase font-bold tracking-tighter">
-                        {concert.status}
-                      </Badge>
-                    </div>
-                  </div>
+          </div>
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <Button variant="outline" className="rounded-xl flex-1 md:flex-none">
+              <Filter className="w-4 h-4 mr-2" /> Filter
+            </Button>
+            <Button variant="outline" size="icon" className="rounded-xl h-10 w-10 text-muted-foreground">
+              <Upload className="w-4 h-4" />
+            </Button>
+            <Button className="rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 flex-1 md:flex-none">
+              <Plus className="w-4 h-4 mr-2" /> Create Event
+            </Button>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader className="bg-accent/30">
+              <TableRow className="hover:bg-transparent border-border">
+                <TableHead className="font-semibold px-6 py-4">Event Name</TableHead>
+                <TableHead className="font-semibold px-6 py-4">Date & Time</TableHead>
+                <TableHead className="font-semibold px-6 py-4">Location</TableHead>
+                <TableHead className="font-semibold px-6 py-4 text-right">Ticket Price</TableHead>
+                <TableHead className="font-semibold px-6 py-4">Status</TableHead>
+                <TableHead className="font-semibold px-6 py-4 w-[50px]"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {concerts.length > 0 ? (
+                concerts.map((concert) => (
+                  <TableRow key={concert.id} className="group hover:bg-accent/20 border-border transition-colors">
+                    <TableCell className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center font-bold text-xs text-primary ring-1 ring-border">
+                          {concert.artist?.name?.charAt(0) || 'E'}
+                        </div>
+                        <span className="font-bold whitespace-nowrap">{concert.artist?.name} Live</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-6 py-4 text-muted-foreground">
+                      {format(new Date(concert.date), 'MMM d, h:mm a')}
+                    </TableCell>
+                    <TableCell className="px-6 py-4 text-muted-foreground">
+                      {concert.venue?.name}
+                    </TableCell>
+                    <TableCell className="px-6 py-4 text-right font-medium text-foreground">
+                      ${concert.ticket_price}
+                    </TableCell>
+                    <TableCell className="px-6 py-4">
+                      {getStatusBadge(concert.status)}
+                    </TableCell>
+                    <TableCell className="px-6 py-4">
+                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                        <MoreHorizontal className="w-4 h-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 ))
               ) : (
-                <div className="text-center py-6 text-zinc-500 text-sm">No upcoming concerts.</div>
+                <TableRow>
+                  <TableCell colSpan={6} className="h-40 text-center text-muted-foreground">
+                    <div className="flex flex-col items-center gap-2">
+                      <Calendar className="w-8 h-8 opacity-20" />
+                      <p>No events found</p>
+                    </div>
+                  </TableCell>
+                </TableRow>
               )}
-            </div>
-          </CardContent>
-        </Card>
+            </TableBody>
+          </Table>
+        </div>
 
-        <Card className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Shortcut to common management tasks</CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4">
-            <Link href="/artists">
-              <Button variant="outline" className="w-full justify-start h-20 flex-col items-start p-4 hover:border-black dark:hover:border-white transition-all">
-                <Users className="w-5 h-5 mb-2 text-zinc-400" />
-                <span>Add Artist</span>
-              </Button>
-            </Link>
-            <Link href="/venues">
-              <Button variant="outline" className="w-full justify-start h-20 flex-col items-start p-4 hover:border-black dark:hover:border-white transition-all">
-                <MapPin className="w-5 h-5 mb-2 text-zinc-400" />
-                <span>New Venue</span>
-              </Button>
-            </Link>
-            <Link href="/concerts">
-              <Button variant="outline" className="w-full justify-start h-20 flex-col items-start p-4 hover:border-black dark:hover:border-white transition-all">
-                <Plus className="w-5 h-5 mb-2 text-zinc-400" />
-                <span>Schedule Event</span>
-              </Button>
-            </Link>
-            <Button variant="outline" disabled className="w-full justify-start h-20 flex-col items-start p-4 opacity-50 grayscale">
-              <DollarSign className="w-5 h-5 mb-2 text-zinc-400" />
-              <span>Ticketing (Soon)</span>
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="p-6 border-t border-border flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg" disabled>&lt;</Button>
+            <Button variant="outline" size="sm" className="h-8 w-8 rounded-lg bg-primary text-primary-foreground border-primary hover:bg-primary/90">1</Button>
+            <Button variant="outline" size="sm" className="h-8 w-8 rounded-lg">2</Button>
+            <Button variant="outline" size="sm" className="h-8 w-8 rounded-lg">3</Button>
+            <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg">&gt;</Button>
+          </div>
+          <p className="text-xs text-muted-foreground">Showing {concerts.length} total events</p>
+        </div>
       </div>
     </div>
   );
+}
+
+function StatCard({ title, value, delta, isUp, icon, color }: { 
+  title: string, 
+  value: string | number, 
+  delta: string, 
+  isUp: boolean, 
+  icon: React.ReactNode,
+  color: 'amber' | 'blue' | 'emerald' | 'rose'
+}) {
+  const colorMap = {
+    amber: 'text-amber-500 bg-amber-500/10',
+    blue: 'text-blue-500 bg-blue-500/10',
+    emerald: 'text-emerald-500 bg-emerald-500/10',
+    rose: 'text-rose-500 bg-rose-500/10',
+  };
+
+  return (
+    <Card className="bg-card border-border overflow-hidden group hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-primary/5">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className={cn("p-2.5 rounded-xl", colorMap[color])}>
+            {icon}
+          </div>
+          <div className={cn(
+            "flex items-center text-[11px] font-bold px-2 py-0.5 rounded-full border",
+            isUp 
+              ? "text-emerald-500 bg-emerald-500/5 border-emerald-500/10" 
+              : "text-rose-500 bg-rose-500/5 border-rose-500/10"
+          )}>
+            {isUp ? <ArrowUpRight className="w-3 h-3 mr-0.5" /> : <ArrowDownRight className="w-3 h-3 mr-0.5" />}
+            {delta}
+            <span className="text-muted-foreground font-normal ml-1">from last week</span>
+          </div>
+        </div>
+        <div>
+          <p className="text-sm font-medium text-muted-foreground mb-1">{title}</p>
+          <div className="text-3xl font-black tracking-tight">{value}</div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function cn(...inputs: any[]) {
+  return inputs.filter(Boolean).join(' ');
 }
