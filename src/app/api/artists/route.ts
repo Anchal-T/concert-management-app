@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { artistService } from '@/services/artistService';
 import { artistSchema } from '@/lib/validations/artist';

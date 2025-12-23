@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { 
   Search, 
@@ -34,15 +33,17 @@ export default function ConcertsPage() {
   useEffect(() => {
     const fetchConcerts = async () => {
       setLoading(true);
-      const { data } = await supabase
-        .from('concerts')
-        .select('*, artist:artists(name), venue:venues(name, city)')
-        .order('date', { ascending: true });
-
-      if (data) {
-        setConcerts(data);
+      try {
+        const res = await fetch('/api/events');
+        if (res.ok) {
+          const data = await res.json();
+          setConcerts(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch concerts', error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchConcerts();

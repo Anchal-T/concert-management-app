@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { NextResponse } from 'next/server';
 import { eventService } from '@/services/eventService';
 import { eventSchema } from '@/lib/validations/event';

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -29,17 +28,16 @@ export function ArtistsList() {
 
   const fetchArtists = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('artists')
-      .select('*')
-      .order('name', { ascending: true });
-
-    if (error) {
-      toast.error('Failed to fetch artists');
-    } else {
+    try {
+      const res = await fetch('/api/artists');
+      if (!res.ok) throw new Error('Failed to fetch artists');
+      const data = await res.json();
       setArtists(data || []);
+    } catch (error) {
+      toast.error('Failed to fetch artists');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -47,13 +45,17 @@ export function ArtistsList() {
   }, []);
 
   const handleDelete = async (id: string, name: string) => {
-    const { error } = await supabase.from('artists').delete().eq('id', id);
+    try {
+      const res = await fetch(`/api/artists/${id}`, {
+        method: 'DELETE',
+      });
 
-    if (error) {
-      toast.error(`Failed to delete ${name}`);
-    } else {
+      if (!res.ok) throw new Error('Failed to delete');
+
       toast.success(`${name} removed from roster`);
       fetchArtists();
+    } catch (error) {
+      toast.error(`Failed to delete ${name}`);
     }
   };
 
@@ -85,9 +87,16 @@ export function ArtistsList() {
       {artists.map((artist) => (
         <Card key={artist.id} className="overflow-hidden bg-card/50 border-border/50 hover:border-primary/30 transition-all duration-300 group rounded-2xl">
           <div className="aspect-square relative overflow-hidden bg-accent/20">
-            {artist.image_url ? (
+            {artist.image_url ? ( // Note: API returns camelCase (imageUrl) if Drizzle/JSON conversion does so, but database columns are snake_case. 
+              // Drizzle `mysqlTable` definitions used `imageUrl: varchar('image_url')`. 
+              // Drizzle query results usually map to the property name (camelCase).
+              // BUT `artistService` uses `db.insert(artists).values(data)`.
+              // `artistService.getAll` uses `db.query.artists.findMany`.
+              // Drizzle ORM returns objects with keys matching the property names defined in schema.ts (camelCase).
+              // So `artist.image_url` might be undefined, and `artist.imageUrl` should be used.
+              // Let's check schema.ts again.
               <img
-                src={artist.image_url}
+                src={artist.imageUrl || artist.image_url} 
                 alt={artist.name}
                 className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700"
               />

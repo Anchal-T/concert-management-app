@@ -11,11 +11,24 @@ export const artistService = {
     });
   },
 
+  async getById(id: number) {
+    return await db.query.artists.findFirst({
+      where: eq(artists.id, id),
+    });
+  },
+
   async create(data: ArtistInput) {
     const [result] = await db.insert(artists).values(data) as unknown as [ResultSetHeader, any];
     const insertId = result.insertId;
-    return await db.query.artists.findFirst({
-      where: eq(artists.id, insertId),
-    });
+    return await this.getById(insertId);
   },
+
+  async update(id: number, data: Partial<ArtistInput>) {
+    await db.update(artists).set(data).where(eq(artists.id, id));
+    return await this.getById(id);
+  },
+
+  async delete(id: number) {
+    await db.delete(artists).where(eq(artists.id, id));
+  }
 };

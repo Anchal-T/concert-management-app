@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { 
   Table, 
   TableBody, 
@@ -19,8 +18,6 @@ import {
   Users, 
   Search, 
   Filter, 
-  MoreHorizontal,
-  Navigation2,
   Building2
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -31,17 +28,16 @@ export function VenuesList() {
 
   const fetchVenues = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('venues')
-      .select('*')
-      .order('name', { ascending: true });
-
-    if (error) {
-      toast.error('Failed to fetch venues');
-    } else {
+    try {
+      const res = await fetch('/api/venues');
+      if (!res.ok) throw new Error('Failed to fetch venues');
+      const data = await res.json();
       setVenues(data || []);
+    } catch (error) {
+      toast.error('Failed to fetch venues');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -49,13 +45,16 @@ export function VenuesList() {
   }, []);
 
   const handleDelete = async (id: string, name: string) => {
-    const { error } = await supabase.from('venues').delete().eq('id', id);
+    try {
+      const res = await fetch(`/api/venues/${id}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) throw new Error('Failed to delete');
 
-    if (error) {
-      toast.error(`Failed to delete ${name}`);
-    } else {
       toast.success(`${name} removed from registry`);
       fetchVenues();
+    } catch (error) {
+      toast.error(`Failed to delete ${name}`);
     }
   };
 

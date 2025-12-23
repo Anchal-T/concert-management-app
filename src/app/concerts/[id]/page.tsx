@@ -1,20 +1,17 @@
 "use client";
 
 import { useEffect, useState, use } from 'react';
-import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   Calendar, 
   MapPin, 
-  Clock, 
-  Users, 
+  LayoutGrid,
   Music, 
   Ticket, 
   DollarSign, 
-  ChevronLeft,
-  MoreVertical,
+  ChevronRight,
   Edit2,
   Trash2,
   Share2,
@@ -22,8 +19,7 @@ import {
   ShieldCheck,
   User,
   Tags,
-  LayoutGrid,
-  ChevronRight,
+  Plus,
   Loader2
 } from 'lucide-react';
 import Link from 'next/link';
@@ -38,20 +34,16 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
   useEffect(() => {
     const fetchConcert = async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('concerts')
-        .select(`
-          *,
-          artist:artists(*),
-          venue:venues(*)
-        `)
-        .eq('id', id)
-        .single();
-
-      if (data) {
+      try {
+        const res = await fetch(`/api/events/${id}`);
+        if (!res.ok) throw new Error('Failed to fetch concert');
+        const data = await res.json();
         setConcert(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchConcert();
@@ -76,6 +68,12 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
       </div>
     );
   }
+
+  // Normalize data for display
+  const artistImage = concert.artist?.imageUrl || concert.artist?.image_url || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop";
+  const artistName = concert.artist?.name || 'Artist';
+  const venueName = concert.venue?.name || 'Venue TBD';
+  const price = concert.price ?? concert.ticket_price ?? 0;
 
   return (
     <div className="max-w-[1400px] mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -105,14 +103,14 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
             <div className="relative aspect-[21/9] w-full overflow-hidden">
                <div className="absolute inset-0 bg-gradient-to-t from-[#0B101B] via-transparent to-transparent z-10" />
                <img 
-                src={concert.artist?.image_url || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop"} 
+                src={artistImage} 
                 className="w-full h-full object-cover"
                 alt="Event Header"
                />
                <div className="absolute -bottom-8 left-8 z-20">
                  <div className="w-32 h-32 rounded-full border-4 border-[#0B101B] bg-accent p-1 overflow-hidden shadow-2xl">
                     <img 
-                      src={concert.artist?.image_url || "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=150&h=150&auto=format&fit=crop"} 
+                      src={artistImage} 
                       className="w-full h-full object-cover rounded-full"
                     />
                  </div>
@@ -124,7 +122,7 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
                 <div className="space-y-4 flex-1">
                   <div className="flex items-center gap-4">
                     <h1 className="text-4xl font-black tracking-tight leading-tight">
-                      {concert.artist?.name} <span className="text-muted-foreground/30 mx-2">vs.</span> {concert.venue?.name}
+                      {artistName} <span className="text-muted-foreground/30 mx-2">vs.</span> {venueName}
                     </h1>
                     <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 capitalize font-bold px-3 py-1">
                       <div className="w-2 h-2 rounded-full bg-emerald-500 mr-2 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
@@ -144,7 +142,7 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
                         </div>
                         <div>
                           <p className="text-xs font-bold uppercase tracking-widest text-primary/50">Schedule</p>
-                          <p className="text-foreground font-bold">{format(new Date(concert.date), 'dd MMMM, yyyy')}</p>
+                          <p className="text-foreground font-bold">{concert.date ? format(new Date(concert.date), 'dd MMMM, yyyy') : 'TBD'}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 text-muted-foreground group">
@@ -162,7 +160,7 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
                         </div>
                         <div>
                           <p className="text-xs font-bold uppercase tracking-widest text-primary/50">Location</p>
-                          <p className="text-foreground font-bold text-sm">{concert.venue?.name}, {concert.venue?.city}</p>
+                          <p className="text-foreground font-bold text-sm">{venueName}, {concert.venue?.city}</p>
                         </div>
                       </div>
                     </div>
@@ -220,9 +218,9 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
                 <div className="flex items-center justify-between p-3 rounded-2xl bg-[#0B101B]/80 border border-border group hover:border-primary/20 transition-all">
                   <div className="flex items-center gap-4">
                      <div className="w-10 h-10 rounded-xl bg-accent overflow-hidden">
-                        <img src={concert.artist?.image_url} className="w-full h-full object-cover" />
+                        <img src={artistImage} className="w-full h-full object-cover" />
                      </div>
-                     <span className="font-bold">{concert.artist?.name}</span>
+                     <span className="font-bold">{artistName}</span>
                   </div>
                   <Badge className="bg-primary/10 text-primary border-primary/20">Headliner</Badge>
                 </div>
@@ -274,7 +272,7 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
                  </div>
                  <h4 className="text-xl font-bold mb-2">No Ticket Collection Attached</h4>
                  <p className="text-muted-foreground max-w-sm mb-8 leading-relaxed">
-                   Attach a ticket collection to enable publishing and sales for the {concert.artist?.name} event.
+                   Attach a ticket collection to enable publishing and sales for the {artistName} event.
                  </p>
                  <Button className="rounded-2xl bg-primary px-8 h-12 shadow-xl shadow-primary/20">
                     <Plus className="w-5 h-5 mr-2" /> Attach Collection
@@ -309,7 +307,7 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
                         </div>
                         <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Total Revenue</p>
                      </div>
-                     <div className="text-4xl font-black">${((concert.ticket_price || 0) * 1240).toLocaleString()}</div>
+                     <div className="text-4xl font-black">${(price * 1240).toLocaleString()}</div>
                      <p className="text-[10px] text-emerald-500/80 mt-2 font-bold uppercase tracking-widest">+12% vs projection</p>
                   </div>
 

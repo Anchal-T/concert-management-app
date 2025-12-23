@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,21 +25,16 @@ export function ConcertsList() {
 
   const fetchConcerts = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('concerts')
-      .select(`
-        *,
-        artist:artists(name, genre, image_url),
-        venue:venues(name, city, state)
-      `)
-      .order('date', { ascending: true });
-
-    if (error) {
-      toast.error('Failed to fetch concerts');
-    } else {
+    try {
+      const res = await fetch('/api/events');
+      if (!res.ok) throw new Error('Failed to fetch concerts');
+      const data = await res.json();
       setConcerts(data || []);
+    } catch (error) {
+      toast.error('Failed to fetch concerts');
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -51,17 +45,21 @@ export function ConcertsList() {
     e.preventDefault();
     e.stopPropagation();
     
-    const { error } = await supabase.from('concerts').delete().eq('id', id);
-
-    if (error) {
-      toast.error('Failed to delete concert');
-    } else {
+    try {
+      const res = await fetch(`/api/events/${id}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) throw new Error('Failed to delete');
+      
       toast.success('Concert registration cancelled');
       fetchConcerts();
+    } catch (error) {
+      toast.error('Failed to delete concert');
     }
   };
 
   const getStatusBadge = (status: string) => {
+    if (!status) return null;
     switch (status.toLowerCase()) {
       case 'confirmed':
         return <Badge variant="secondary" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Confirmed</Badge>;
@@ -71,6 +69,8 @@ export function ConcertsList() {
         return <Badge variant="secondary" className="bg-amber-500/10 text-amber-500 border-amber-500/20 gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-amber-500" /> Draft</Badge>;
       case 'cancelled':
         return <Badge variant="secondary" className="bg-rose-500/10 text-rose-500 border-rose-500/20 gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-rose-500" /> Cancelled</Badge>;
+      case 'upcoming':
+         return <Badge variant="secondary" className="bg-purple-500/10 text-purple-500 border-purple-500/20 gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-purple-500" /> Upcoming</Badge>;
       default:
         return <Badge variant="secondary" className="bg-zinc-500/10 text-zinc-500 border-zinc-500/20">{status}</Badge>;
     }
@@ -108,8 +108,12 @@ export function ConcertsList() {
               <div className="flex flex-col lg:flex-row">
                 {/* Visual Area */}
                 <div className="w-full lg:w-72 h-48 lg:h-auto relative overflow-hidden bg-accent">
-                  {concert.artist?.image_url ? (
-                    <img src={concert.artist.image_url} alt={concert.artist.name} className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" />
+                  {concert.artist?.imageUrl || concert.artist?.image_url ? (
+                    <img 
+                      src={concert.artist?.imageUrl || concert.artist?.image_url} 
+                      alt={concert.artist.name} 
+                      className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" 
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-primary/20 to-accent">
                       <Music className="w-12 h-12 text-primary/30" />
@@ -143,7 +147,7 @@ export function ConcertsList() {
                       <div className="flex items-center sm:justify-end gap-1.5">
                         <Ticket className="w-4 h-4 text-emerald-500" />
                         <span className="text-2xl font-black text-foreground">
-                          {concert.ticket_price ? `$${concert.ticket_price}` : 'TBD'}
+                          {concert.price ? `$${concert.price}` : (concert.ticket_price ? `$${concert.ticket_price}` : 'TBD')}
                         </span>
                       </div>
                     </div>
@@ -153,11 +157,12 @@ export function ConcertsList() {
                     <div className="flex items-center gap-8">
                       <div className="flex items-center text-sm font-semibold text-foreground">
                         <Calendar className="w-4 h-4 mr-2.5 text-primary" />
-                        {format(new Date(concert.date), 'PPPP')}
+                        {concert.date && !isNaN(new Date(concert.date).getTime()) ? format(new Date(concert.date), 'PPPP') : 'Date TBD'}
                       </div>
                       <div className="flex items-center text-sm font-semibold text-foreground">
                         <Clock className="w-4 h-4 mr-2.5 text-primary" />
-                        {concert.time || '19:00'}
+                         {/* Extract time from date or use dummy */}
+                         {concert.date && !isNaN(new Date(concert.date).getTime()) ? format(new Date(concert.date), 'h:mm a') : '19:00'}
                       </div>
                     </div>
                     

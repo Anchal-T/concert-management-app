@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -47,32 +46,35 @@ export default function DashboardContent() {
     const fetchDashboardData = async () => {
       setLoading(true);
       
-      const { data: allConcerts } = await supabase
-        .from('concerts')
-        .select('*, artist:artists(name), venue:venues(name)')
-        .order('date', { ascending: true });
-
-      if (allConcerts) {
-        setConcerts(allConcerts);
-        const upcoming = allConcerts.filter(c => c.status === 'scheduled').length;
-        const ongoing = allConcerts.filter(c => c.status === 'confirmed').length;
-        const cancelled = allConcerts.filter(c => c.status === 'cancelled').length;
-        
-        setStats({
-          total: allConcerts.length,
-          upcoming,
-          ongoing,
-          cancelled
-        });
+      try {
+        const res = await fetch('/api/events');
+        if (res.ok) {
+          const allConcerts = await res.json();
+          setConcerts(allConcerts);
+          
+          const upcoming = allConcerts.filter((c: any) => c.status?.toLowerCase() === 'upcoming' || c.status?.toLowerCase() === 'scheduled').length;
+          const ongoing = allConcerts.filter((c: any) => c.status?.toLowerCase() === 'ongoing' || c.status?.toLowerCase() === 'confirmed').length;
+          const cancelled = allConcerts.filter((c: any) => c.status?.toLowerCase() === 'cancelled').length;
+          
+          setStats({
+            total: allConcerts.length,
+            upcoming,
+            ongoing,
+            cancelled
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch dashboard data", error);
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
 
     fetchDashboardData();
   }, []);
 
   const getStatusBadge = (status: string) => {
+    if (!status) return null;
     switch (status.toLowerCase()) {
       case 'scheduled':
       case 'upcoming':
