@@ -10,7 +10,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-export function ScheduleConcertDialog() {
+interface ScheduleConcertDialogProps {
+  triggerLabel?: string;
+  triggerClassName?: string;
+}
+
+// Opens a dialog that creates an event using existing /api/artists, /api/venues and /api/events endpoints.
+export function ScheduleConcertDialog({
+  triggerLabel = 'Schedule Event',
+  triggerClassName,
+}: ScheduleConcertDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [artists, setArtists] = useState<any[]>([]);
@@ -97,9 +106,9 @@ export function ScheduleConcertDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shadow-lg shadow-primary/20 px-6">
+        <Button className={triggerClassName ?? "bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shadow-lg shadow-primary/20 px-6 h-11 font-bold"}>
           <Plus className="w-5 h-5 mr-2" />
-          Schedule Event
+          {triggerLabel}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px] bg-[#0B101B] border-border rounded-3xl p-8">
@@ -157,6 +166,7 @@ export function ScheduleConcertDialog() {
                   id="time"
                   name="time"
                   type="time"
+                  required
                   className="bg-accent/20 border-border rounded-xl h-11 text-white"
                 />
               </div>
@@ -170,40 +180,31 @@ export function ScheduleConcertDialog() {
                   name="ticket_price"
                   type="number"
                   step="0.01"
-                  placeholder="0.00"
-                  className="bg-accent/20 border-border rounded-xl h-11 text-white"
+                  placeholder="49.99"
+                  required
+                  className="bg-accent/20 border-border rounded-xl h-11 text-white placeholder:text-muted-foreground/50"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="status" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Status</Label>
-                <Select name="status" defaultValue="Upcoming">
+                <Label htmlFor="status" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Initial Status</Label>
+                <Select name="status" defaultValue="scheduled">
                   <SelectTrigger className="bg-accent/20 border-border rounded-xl h-11 text-white">
-                    <SelectValue placeholder="Select Status" />
+                    <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#0B101B] border-border">
-                    <SelectItem value="Upcoming">Upcoming</SelectItem>
-                    <SelectItem value="Ongoing">Ongoing</SelectItem>
-                    <SelectItem value="Completed">Completed</SelectItem>
-                    <SelectItem value="Cancelled">Cancelled</SelectItem>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="scheduled">Scheduled</SelectItem>
+                    <SelectItem value="confirmed">Confirmed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
           </div>
-          <DialogFooter>
-            <Button 
-              type="submit" 
-              disabled={loading}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-12 font-bold shadow-lg shadow-primary/20"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Scheduling...
-                </>
-              ) : (
-                'Schedule Event'
-              )}
+          <DialogFooter className="gap-3">
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)} className="rounded-xl h-11 px-6 font-bold hover:bg-accent/20">Cancel</Button>
+            <Button type="submit" disabled={loading} className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-11 px-8 font-bold shadow-lg shadow-primary/20">
+              {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Schedule Event
             </Button>
           </DialogFooter>
         </form>

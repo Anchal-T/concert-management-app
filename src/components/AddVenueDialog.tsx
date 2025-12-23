@@ -53,46 +53,46 @@ export function AddVenueDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg px-6">
-          <Plus className="w-4 h-4 mr-2" />
+        <Button className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl shadow-lg shadow-primary/20 px-6 h-11 font-bold">
+          <Plus className="w-5 h-5 mr-2" />
           Add Venue
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] bg-card border-border rounded-2xl">
-        <form onSubmit={handleSubmit}>
+      <DialogContent className="sm:max-w-[500px] bg-[#0B101B] border-border rounded-3xl p-8">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <DialogHeader>
-            <DialogTitle>Add New Venue</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-2xl font-bold text-white">Add New Venue</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
               Enter the technical details and location of the venue.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-6 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="name">Venue Name</Label>
-              <Input id="name" name="name" placeholder="Madison Square Garden" required />
+              <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Venue Name</Label>
+              <Input id="name" name="name" placeholder="Madison Square Garden" required className="bg-accent/20 border-border rounded-xl h-11 text-white placeholder:text-muted-foreground/50" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="city">City</Label>
-                <Input id="city" name="city" placeholder="New York" />
+                <Label htmlFor="city" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">City</Label>
+                <Input id="city" name="city" placeholder="New York" className="bg-accent/20 border-border rounded-xl h-11 text-white placeholder:text-muted-foreground/50" />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="state">State/Province</Label>
-                <Input id="state" name="state" placeholder="NY" />
+                <Label htmlFor="state" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">State/Province</Label>
+                <Input id="state" name="state" placeholder="NY" className="bg-accent/20 border-border rounded-xl h-11 text-white placeholder:text-muted-foreground/50" />
               </div>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="capacity">Capacity</Label>
-              <Input id="capacity" name="capacity" type="number" placeholder="20000" />
+              <Label htmlFor="capacity" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Capacity</Label>
+              <Input id="capacity" name="capacity" type="number" placeholder="20000" className="bg-accent/20 border-border rounded-xl h-11 text-white placeholder:text-muted-foreground/50" />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="address">Address</Label>
-              <Input id="address" name="address" placeholder="4 Pennsylvania Plaza" />
+              <Label htmlFor="address" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Address</Label>
+              <Input id="address" name="address" placeholder="4 Pennsylvania Plaza" className="bg-accent/20 border-border rounded-xl h-11 text-white placeholder:text-muted-foreground/50" />
             </div>
           </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" disabled={loading}>
+          <DialogFooter className="gap-3">
+            <Button type="button" variant="ghost" onClick={() => setOpen(false)} className="rounded-xl h-11 px-6 font-bold hover:bg-accent/20">Cancel</Button>
+            <Button type="submit" disabled={loading} className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-11 px-8 font-bold shadow-lg shadow-primary/20">
               {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Save Venue
             </Button>

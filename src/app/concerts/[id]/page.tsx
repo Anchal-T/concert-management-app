@@ -7,23 +7,18 @@ import { Card, CardContent } from '@/components/ui/card';
 import {
   Calendar,
   MapPin,
-  LayoutGrid,
-  Music,
   Ticket,
   DollarSign,
-  ChevronRight,
   Edit2,
+  Ban,
   Trash2,
-  Share2,
-  Info,
-  ShieldCheck,
-  User,
-  Users,
-  Tags,
+  Users2,
+  ChevronLeft,
+  ChevronRight,
   Plus,
+  Tag,
   Loader2
 } from 'lucide-react';
-import Link from 'next/link';
 import { format } from 'date-fns';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -37,6 +32,19 @@ interface EventStats {
   totalSold: number;
   totalRevenue: number;
   uniqueBuyers: number;
+}
+
+// Formats currency consistently for the Event Summary sidebar.
+function formatCurrency(value: number): string {
+  const safeValue = Number.isFinite(value) ? value : 0;
+  return safeValue.toLocaleString(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
+}
+
+// Returns a safe Date instance for rendering, or null if parsing fails.
+function parseDate(value: unknown): Date | null {
+  if (typeof value !== 'string' || !value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
 }
 
 export default function ConcertDetailsPage({ params }: { params: Promise<{ id: string }> }) {
@@ -97,305 +105,266 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
     return (
       <div className="text-center py-40">
         <h2 className="text-2xl font-bold">Event Not Found</h2>
-        <Link href="/concerts">
-          <Button variant="link" className="mt-4">Back to Schedule</Button>
-        </Link>
+        <Button variant="link" className="mt-4" asChild>
+          <a href="/concerts">Back to Events</a>
+        </Button>
       </div>
     );
   }
 
-  // Normalize data for display
-  const artistImage = concert.artist?.imageUrl || concert.artist?.image_url || "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=2070&auto=format&fit=crop";
+  // Normalize data for display (avoid external placeholder assets).
+  const artistImage: string | null = concert.artist?.imageUrl || concert.artist?.image_url || null;
   const artistName = concert.artist?.name || 'Artist';
-  const venueName = concert.venue?.name || 'Venue TBD';
-  const price = concert.price ?? concert.ticket_price ?? 0;
+  const venueName = concert.venue?.name || 'Venue';
+  const eventTitle = concert.title || `${artistName} vs. ${venueName}`;
+  const eventDate = parseDate(concert.date);
+  const statusLabel = String(concert.status || 'Draft');
 
   return (
-    <div className="max-w-[1400px] mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Header / Breadcrumbs */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium">
-          <Link href="/concerts" className="hover:text-primary transition-colors">Concert Management</Link>
-          <ChevronRight className="w-4 h-4 opacity-50" />
-          <Link href="/concerts" className="hover:text-primary transition-colors">Events</Link>
-          <ChevronRight className="w-4 h-4 opacity-50" />
-          <span className="text-foreground font-bold">Event Details</span>
+    <div className="max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Main Hero Card */}
+        <div className="lg:col-span-9 bg-card/40 border border-border/50 rounded-3xl overflow-hidden relative">
+          <div className="h-48 w-full relative overflow-hidden">
+            <div className="absolute inset-0 bg-linear-to-t from-[#04070D] to-transparent z-10" />
+            {artistImage ? (
+              <img src={artistImage} alt={artistName} className="w-full h-full object-cover opacity-70" />
+            ) : (
+              <div className="w-full h-full bg-accent/20" />
+            )}
+          </div>
+
+          <div className="p-8 -mt-20 relative z-10">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-end gap-6">
+                <div className="w-24 h-24 rounded-full border-4 border-[#04070D] overflow-hidden bg-accent shadow-2xl">
+                  {artistImage ? (
+                    <img src={artistImage} alt={artistName} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-foreground font-black">
+                      {artistName.substring(0, 2).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+
+                <div className="pb-2">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h1 className="text-2xl font-bold tracking-tight line-clamp-1">{eventTitle}</h1>
+                    <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                      {statusLabel}
+                    </Badge>
+                  </div>
+                  <p className="text-muted-foreground text-sm max-w-2xl line-clamp-2">
+                    {concert.description || concert.artist?.bio || 'No description available for this event.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="icon" className="rounded-xl bg-accent/20 border-transparent hover:bg-accent/40">
+                  <Edit2 className="w-4 h-4" />
+                </Button>
+                <Button variant="outline" size="icon" className="rounded-xl bg-accent/20 border-transparent hover:bg-accent/40">
+                  <Ban className="w-4 h-4" />
+                </Button>
+                <Button variant="outline" size="icon" className="rounded-xl bg-accent/20 border-transparent hover:bg-rose-500/20 hover:text-rose-500">
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10 pt-8 border-t border-border/50">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Date & Time</p>
+                  <p className="text-sm font-bold">
+                    {eventDate ? format(eventDate, 'dd MMM, yyyy') : 'TBD'}
+                    {concert.time ? ` — ${concert.time}` : ''}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Tag className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Tags</p>
+                  <p className="text-sm font-bold line-clamp-1">
+                    {tags.length ? tags.map((t) => t.name).join(', ') : 'None'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <MapPin className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">Location</p>
+                  <p className="text-sm font-bold line-clamp-1">
+                    {concert.venue?.name ? `${concert.venue?.name}${concert.venue?.city ? `, ${concert.venue?.city}` : ''}` : 'TBD'}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" className="rounded-xl h-9">
-            <Share2 className="w-4 h-4 mr-2" /> Share
-          </Button>
-          <Button size="sm" className="rounded-xl h-9 bg-primary shadow-lg shadow-primary/20">
-            Export Report
-          </Button>
+
+        {/* Event Summary */}
+        <div className="lg:col-span-3">
+          <div className="bg-card/40 border border-border/50 rounded-3xl p-6 h-full flex flex-col">
+            <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-8">Event Summary</h3>
+
+            <div className="flex-1 space-y-10">
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center mx-auto mb-4">
+                  <Ticket className="w-6 h-6 text-blue-500" />
+                </div>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Total Tickets Sold</p>
+                <p className="text-3xl font-black tracking-tight">{stats.totalSold.toLocaleString()}</p>
+              </div>
+
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
+                  <DollarSign className="w-6 h-6 text-emerald-500" />
+                </div>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Total Revenue</p>
+                <p className="text-3xl font-black tracking-tight">{formatCurrency(stats.totalRevenue)}</p>
+              </div>
+
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center mx-auto mb-4">
+                  <Users2 className="w-6 h-6 text-amber-500" />
+                </div>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Unique Attendees</p>
+                <p className="text-3xl font-black tracking-tight">{stats.uniqueBuyers.toLocaleString()}</p>
+              </div>
+            </div>
+
+            <div className="mt-8 pt-8 border-t border-border/50 flex items-center justify-center gap-3">
+              <button type="button" className="p-2 rounded-xl hover:bg-accent/20 text-muted-foreground" aria-label="Previous">
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-primary" />
+                <div className="w-2 h-2 rounded-full bg-border" />
+                <div className="w-2 h-2 rounded-full bg-border" />
+              </div>
+              <button type="button" className="p-2 rounded-xl hover:bg-accent/20 text-muted-foreground" aria-label="Next">
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
-        {/* Main Content (Left 3 cols) */}
-        <div className="xl:col-span-3 space-y-8">
-          <Card className="overflow-hidden bg-[#0B101B] border-border rounded-[32px] border-2">
-            <div className="relative aspect-[21/9] w-full overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0B101B] via-transparent to-transparent z-10" />
-              <img
-                src={artistImage}
-                className="w-full h-full object-cover"
-                alt="Event Header"
-              />
-              <div className="absolute -bottom-8 left-8 z-20">
-                <div className="w-32 h-32 rounded-full border-4 border-[#0B101B] bg-accent p-1 overflow-hidden shadow-2xl">
-                  <img
-                    src={artistImage}
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <CardContent className="pt-12 pb-8 px-10">
-              <div className="flex justify-between items-start gap-6">
-                <div className="space-y-4 flex-1">
-                  <div className="flex items-center gap-4">
-                    <h1 className="text-4xl font-black tracking-tight leading-tight">
-                      {artistName} <span className="text-muted-foreground/30 mx-2">vs.</span> {venueName}
-                    </h1>
-                    <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 capitalize font-bold px-3 py-1">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500 mr-2 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                      {concert.status}
-                    </Badge>
-                  </div>
-
-                  <p className="text-muted-foreground leading-relaxed max-w-3xl">
-                    {concert.artist?.bio || "Join us for an unforgettable night of performance. This event brings together world-class talent and state-of-the-art venue facilities for a premium fan experience."}
-                  </p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 pt-4">
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-3 text-muted-foreground group">
-                        <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center group-hover:bg-primary/20 group-hover:text-primary transition-colors">
-                          <Calendar className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold uppercase tracking-widest text-primary/50">Schedule</p>
-                          <p className="text-foreground font-bold">{concert.date ? format(new Date(concert.date), 'dd MMMM, yyyy') : 'TBD'}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 text-muted-foreground group">
-                        <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center group-hover:bg-primary/20 group-hover:text-primary transition-colors">
-                          <LayoutGrid className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold uppercase tracking-widest text-primary/50">Category</p>
-                          <p className="text-foreground font-bold text-sm">{concert.artist?.genre || 'Live Concert'}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3 text-muted-foreground group">
-                        <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center group-hover:bg-primary/20 group-hover:text-primary transition-colors">
-                          <MapPin className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold uppercase tracking-widest text-primary/50">Location</p>
-                          <p className="text-foreground font-bold text-sm">{venueName}, {concert.venue?.city}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div className="p-4 rounded-2xl bg-accent/30 border border-border flex flex-col gap-3 group">
-                        <div className="flex justify-between items-center px-1">
-                          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Policy</p>
-                          <Info className="w-4 h-4 text-muted-foreground/50" />
-                        </div>
-                        <div className="bg-background rounded-xl p-3 text-sm font-semibold flex items-center gap-2 group-hover:border-primary/30 transition-all border border-transparent">
-                          <ShieldCheck className="w-5 h-5 text-primary" />
-                          Premium Entry Protocol
-                        </div>
-                      </div>
-                      <div className="p-4 rounded-2xl bg-accent/30 border border-border flex flex-col gap-3 group">
-                        <div className="flex justify-between items-center px-1">
-                          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Organizer</p>
-                          <User className="w-4 h-4 text-muted-foreground/50" />
-                        </div>
-                        <div className="bg-background rounded-xl p-3 text-sm font-semibold flex items-center gap-3 group-hover:border-primary/30 transition-all border border-transparent">
-                          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
-                            <Music className="w-4 h-4" />
-                          </div>
-                          ConcertHub Elite
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="icon" className="rounded-xl h-10 w-10">
-                    <Edit2 className="w-4 h-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" className="rounded-xl h-10 w-10 text-muted-foreground">
-                    <Info className="w-4 h-4" />
-                  </Button>
-                  <Button variant="outline" size="icon" className="rounded-xl h-10 w-10 text-destructive hover:bg-destructive/10">
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Teams / Multi-artist support UI placeholder */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card className="bg-[#0B101B]/50 border-border rounded-3xl p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="font-bold text-lg">Featured Artists</h3>
-                <Button variant="link" size="sm" className="text-primary p-0 h-auto font-bold">See all</Button>
-              </div>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-[#0B101B]/80 border border-border group hover:border-primary/20 transition-all">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-accent overflow-hidden">
-                      <img src={artistImage} className="w-full h-full object-cover" />
-                    </div>
-                    <span className="font-bold">{artistName}</span>
-                  </div>
-                  <Badge className="bg-primary/10 text-primary border-primary/20">Headliner</Badge>
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-[#0B101B]/40 border border-border/50 opacity-60">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center">
-                      <User className="w-5 h-5 text-muted-foreground" />
-                    </div>
-                    <span className="font-bold">Opening Act</span>
-                  </div>
-                  <Badge variant="outline" className="border-border text-muted-foreground">Pending</Badge>
-                </div>
-              </div>
-            </Card>
-
-            <Card className="bg-[#0B101B]/50 border-border rounded-3xl p-6">
-              <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
-                <Tags className="w-5 h-5 text-primary" /> Event Tags
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {tags.length > 0 ? tags.map(tag => (
-                  <Badge
-                    key={tag.id}
-                    className="hover:bg-primary hover:text-white transition-all cursor-default px-3 py-1.5 rounded-xl border-border"
-                    style={{ backgroundColor: `${tag.color}20`, color: tag.color, borderColor: `${tag.color}40` }}
-                  >
-                    {tag.name}
-                  </Badge>
-                )) : (
-                  <p className="text-sm text-muted-foreground">No tags assigned. <Link href="/tags" className="text-primary hover:underline">Manage tags</Link></p>
+      {/* Teams + Tags */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        <div className="md:col-span-3 bg-card/40 border border-border/50 rounded-3xl p-6">
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Teams</p>
+            <a href="/artists" className="text-[10px] font-bold text-muted-foreground hover:text-foreground">See all</a>
+          </div>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-accent/40 overflow-hidden border border-border/50">
+                {artistImage ? (
+                  <img src={artistImage} alt={artistName} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-[10px] font-black">{artistName.substring(0, 2).toUpperCase()}</div>
                 )}
               </div>
-            </Card>
+              <p className="text-sm font-bold line-clamp-1">{artistName}</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-accent/40 overflow-hidden border border-border/50 flex items-center justify-center">
+                <span className="text-[10px] font-black">{venueName.substring(0, 2).toUpperCase()}</span>
+              </div>
+              <p className="text-sm font-bold line-clamp-1">{venueName}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="md:col-span-9 bg-card/40 border border-border/50 rounded-3xl p-6">
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Tags</p>
+            <a href="/tags" className="text-[10px] font-bold text-muted-foreground hover:text-foreground">See all</a>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {tags.length ? (
+              tags.map((tag) => (
+                <Badge
+                  key={tag.id}
+                  variant="outline"
+                  className="rounded-full px-3 py-1 text-[10px] font-bold border-border bg-accent/20 text-foreground"
+                >
+                  {tag.name}
+                </Badge>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">No tags assigned.</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs Section */}
+      <div className="bg-card/40 border border-border/50 rounded-3xl overflow-hidden">
+        <Tabs defaultValue="collections" className="w-full">
+          <div className="bg-accent/20 border-b border-border/50 px-6">
+            <TabsList className="bg-transparent h-12 gap-6">
+              <TabsTrigger value="collections" className="data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-foreground rounded-none font-bold text-xs px-0 border-b-2 border-transparent">
+                Ticket Collections
+              </TabsTrigger>
+              <TabsTrigger value="categories" className="data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-foreground rounded-none font-bold text-xs px-0 border-b-2 border-transparent">
+                Ticket Categories
+              </TabsTrigger>
+              <TabsTrigger value="attendees" className="data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-foreground rounded-none font-bold text-xs px-0 border-b-2 border-transparent">
+                Attendee List
+              </TabsTrigger>
+              <TabsTrigger value="promotions" className="data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-foreground rounded-none font-bold text-xs px-0 border-b-2 border-transparent">
+                Promotions / Discounts
+              </TabsTrigger>
+              <TabsTrigger value="seats" className="data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-foreground rounded-none font-bold text-xs px-0 border-b-2 border-transparent">
+                Seat chart
+              </TabsTrigger>
+            </TabsList>
           </div>
 
-          {/* Bottom Tabs Section */}
-          <div className="bg-[#0B101B] border-2 border-border rounded-[32px] overflow-hidden">
-            <Tabs defaultValue="tickets" className="w-full">
-              <div className="bg-accent/30 px-8 py-2 border-b border-border">
-                <TabsList className="bg-transparent h-14 gap-8">
-                  <TabsTrigger value="tickets" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none font-bold text-sm px-0 transition-all border-b-2 border-transparent">
-                    Ticket Collections
-                  </TabsTrigger>
-                  <TabsTrigger value="categories" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none font-bold text-sm px-0 transition-all border-b-2 border-transparent">
-                    Ticket Categories
-                  </TabsTrigger>
-                  <TabsTrigger value="attendees" className="data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none font-bold text-sm px-0 transition-all border-b-2 border-transparent">
-                    Attendee List
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-              <TabsContent value="tickets" className="mt-0 p-12 min-h-[400px] flex flex-col items-center justify-center text-center">
-                <div className="w-20 h-20 rounded-3xl bg-accent/50 flex items-center justify-center mb-6 border border-border ring-4 ring-accent/20">
-                  <Ticket className="w-10 h-10 text-muted-foreground/30" />
-                </div>
-                <h4 className="text-xl font-bold mb-2">No Ticket Collection Attached</h4>
-                <p className="text-muted-foreground max-w-sm mb-8 leading-relaxed">
-                  Attach a ticket collection to enable publishing and sales for the {artistName} event.
-                </p>
-                <Button className="rounded-2xl bg-primary px-8 h-12 shadow-xl shadow-primary/20">
-                  <Plus className="w-5 h-5 mr-2" /> Attach Collection
+          <TabsContent value="collections" className="mt-0 p-8 min-h-[360px]">
+            <div className="flex items-center justify-between mb-8">
+              <p className="text-sm font-bold">Ticket Collection</p>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="icon" className="rounded-lg h-9 w-9 bg-accent/10 border-transparent">
+                  <span className="text-muted-foreground">↗</span>
                 </Button>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
-
-        {/* Sidebar Summary (Right 1 col) */}
-        <div className="space-y-8">
-          <Card className="bg-[#0B101B] border-border rounded-[32px] overflow-hidden sticky top-32 group hover:border-primary/20 transition-all border-2">
-            <div className="p-8 space-y-8 text-center sm:text-left">
-              <h3 className="font-black text-xs uppercase tracking-[0.2em] text-primary">Event Summary</h3>
-
-              <div className="space-y-6">
-                <div className="p-6 rounded-3xl bg-accent/20 border border-border group-hover:bg-accent/30 transition-all">
-                  <div className="flex items-center justify-center sm:justify-start gap-4 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 border border-blue-500/20">
-                      <LayoutGrid className="w-5 h-5" />
-                    </div>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Tickets Sold</p>
-                  </div>
-                  <div className="text-4xl font-black">{(concert.soldTickets || stats.totalSold || 0).toLocaleString()}</div>
-                  <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-widest">Target: {(concert.totalTickets || 0).toLocaleString()}</p>
-                </div>
-
-                <div className="p-6 rounded-3xl bg-accent/20 border border-border group-hover:bg-accent/30 transition-all">
-                  <div className="flex items-center justify-center sm:justify-start gap-4 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
-                      <DollarSign className="w-5 h-5" />
-                    </div>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Total Revenue</p>
-                  </div>
-                  <div className="text-4xl font-black">${stats.totalRevenue.toLocaleString()}</div>
-                  <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase tracking-widest">@ ${Number(price).toFixed(2)} per ticket</p>
-                </div>
-
-                <div className="p-6 rounded-3xl bg-accent/20 border border-border group-hover:bg-accent/30 transition-all">
-                  <div className="flex items-center justify-center sm:justify-start gap-4 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-                      <Users className="w-5 h-5" />
-                    </div>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Unique Fans</p>
-                  </div>
-                  <div className="text-4xl font-black">{stats.uniqueBuyers.toLocaleString()}</div>
-                  <div className="flex items-center justify-center sm:justify-start -space-x-2 mt-4">
-                    {[1, 2, 3, 4].map(i => (
-                      <div key={i} className="w-7 h-7 rounded-full border-2 border-[#0B101B] bg-accent flex items-center justify-center text-[8px] font-black">
-                        {String.fromCharCode(64 + i)}
-                      </div>
-                    ))}
-                    {stats.uniqueBuyers > 4 && (
-                      <div className="w-7 h-7 rounded-full border-2 border-[#0B101B] bg-primary flex items-center justify-center text-[8px] font-black">+{(stats.uniqueBuyers - 4).toLocaleString()}</div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-center gap-2 pt-4">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === 1 ? 'bg-primary' : 'bg-muted-foreground/30'}`} />
-                ))}
+                <Button className="rounded-lg h-9 px-4 font-bold bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Plus className="w-4 h-4 mr-2" /> Attach Collection
+                </Button>
               </div>
             </div>
-          </Card>
 
-          <Card className="bg-[#0B101B]/40 border-border rounded-3xl border-2 p-6 border-dashed">
-            <div className="flex flex-col items-center gap-4 text-center">
-              <div className="w-12 h-12 rounded-full border-2 border-border flex items-center justify-center text-muted-foreground">
-                <Plus className="w-6 h-6" />
-              </div>
-              <div>
-                <p className="text-sm font-bold">Additional Intelligence</p>
-                <p className="text-xs text-muted-foreground mt-1 px-4">Connect demographic data or marketing pixels to see enhanced stats.</p>
-              </div>
-              <Button variant="outline" size="sm" className="rounded-xl font-bold mt-2">
-                Upgrade Plan
-              </Button>
+            <div className="h-[260px] flex flex-col items-center justify-center text-center bg-accent/10 border border-border/30 rounded-2xl">
+              <p className="text-sm font-bold">No Ticket Collection Attached</p>
+              <p className="text-xs text-muted-foreground mt-2 max-w-md">
+                Attach a ticket collection to enable publishing and sales for {eventTitle}.
+              </p>
             </div>
-          </Card>
-        </div>
+          </TabsContent>
+
+          {(['categories', 'attendees', 'promotions', 'seats'] as const).map((key) => (
+            <TabsContent key={key} value={key} className="mt-0 p-8 min-h-[360px]">
+              <div className="h-[260px] flex flex-col items-center justify-center text-center bg-accent/10 border border-border/30 rounded-2xl">
+                <p className="text-sm font-bold">No data available</p>
+                <p className="text-xs text-muted-foreground mt-2 max-w-md">
+                  This section is ready for your existing backend wiring when available.
+                </p>
+              </div>
+            </TabsContent>
+          ))}
+        </Tabs>
       </div>
     </div>
   );
