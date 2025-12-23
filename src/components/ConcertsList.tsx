@@ -111,14 +111,14 @@ export function ConcertsList() {
                   {concert.artist?.image_url ? (
                     <img src={concert.artist.image_url} alt={concert.artist.name} className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-accent">
+                    <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-primary/20 to-accent">
                       <Music className="w-12 h-12 text-primary/30" />
                     </div>
                   )}
                   <div className="absolute top-4 left-4 z-10">
                     {getStatusBadge(concert.status)}
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-transparent to-transparent lg:hidden" />
+                  <div className="absolute inset-0 bg-linear-to-r from-black/60 via-transparent to-transparent lg:hidden" />
                 </div>
                 
                 {/* Content Area */}

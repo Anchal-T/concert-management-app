@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -19,25 +18,35 @@ export function AddVenueDialog() {
     e.preventDefault();
     setLoading(true);
     const formData = new FormData(e.currentTarget);
-    const name = formData.get('name') as string;
-    const city = formData.get('city') as string;
-    const state = formData.get('state') as string;
-    const capacity = parseInt(formData.get('capacity') as string);
-    const address = formData.get('address') as string;
+    
+    const payload = {
+      name: formData.get('name') as string,
+      city: formData.get('city') as string,
+      state: formData.get('state') as string,
+      capacity: parseInt(formData.get('capacity') as string),
+      address: formData.get('address') as string,
+    };
 
-    const { error } = await supabase
-      .from('venues')
-      .insert([{ name, city, state, capacity, address }]);
+    try {
+      const res = await fetch('/api/venues', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-    setLoading(false);
-    if (error) {
-      toast.error('Failed to add venue');
-    } else {
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to add venue');
+      }
+
       toast.success('Venue added successfully');
       setOpen(false);
       router.refresh();
-      // Since it's a client component with local state fetching in the list, we might need to trigger a re-fetch in the list sibling or use a global state/reload
-      window.location.reload(); // Quick fix for sibling refresh if not using global state
+      window.location.reload();
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 

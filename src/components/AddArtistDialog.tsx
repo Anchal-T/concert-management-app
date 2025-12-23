@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -20,22 +19,33 @@ export function AddArtistDialog() {
     e.preventDefault();
     setLoading(true);
     const formData = new FormData(e.currentTarget);
-    const name = formData.get('name') as string;
-    const genre = formData.get('genre') as string;
-    const bio = formData.get('bio') as string;
-    const image_url = formData.get('image_url') as string;
+    
+    const payload = {
+      name: formData.get('name') as string,
+      genre: formData.get('genre') as string,
+      bio: formData.get('bio') as string,
+      imageUrl: formData.get('image_url') as string,
+    };
 
-    const { error } = await supabase
-      .from('artists')
-      .insert([{ name, genre, bio, image_url }]);
+    try {
+      const res = await fetch('/api/artists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
 
-    setLoading(false);
-    if (error) {
-      toast.error('Failed to add artist');
-    } else {
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to add artist');
+      }
+
       toast.success('Artist added successfully');
       setOpen(false);
       router.refresh();
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 

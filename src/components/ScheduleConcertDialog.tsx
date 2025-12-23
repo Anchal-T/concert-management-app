@@ -2,13 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Loader2, Calendar as CalendarIcon } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function ScheduleConcertDialog() {
@@ -21,12 +20,21 @@ export function ScheduleConcertDialog() {
   useEffect(() => {
     if (open) {
       const fetchData = async () => {
-        const [artistsRes, venuesRes] = await Promise.all([
-          supabase.from('artists').select('id, name').order('name'),
-          supabase.from('venues').select('id, name').order('name')
-        ]);
-        setArtists(artistsRes.data || []);
-        setVenues(venuesRes.data || []);
+        try {
+          const [artistsRes, venuesRes] = await Promise.all([
+            fetch('/api/artists'),
+            fetch('/api/venues')
+          ]);
+          
+          if (artistsRes.ok) {
+            setArtists(await artistsRes.json());
+          }
+          if (venuesRes.ok) {
+            setVenues(await venuesRes.json());
+          }
+        } catch (error) {
+          console.error("Failed to fetch data", error);
+        }
       };
       fetchData();
     }
@@ -37,32 +45,52 @@ export function ScheduleConcertDialog() {
     setLoading(true);
     const formData = new FormData(e.currentTarget);
     
-    const artist_id = formData.get('artist_id') as string;
-    const venue_id = formData.get('venue_id') as string;
-    const date = formData.get('date') as string;
-    const time = formData.get('time') as string;
+    const artistId = formData.get('artist_id') as string;
+    const venueId = formData.get('venue_id') as string;
+    const dateStr = formData.get('date') as string;
+    const timeStr = formData.get('time') as string;
     const ticket_price = parseFloat(formData.get('ticket_price') as string);
     const status = formData.get('status') as string;
 
-    const { error } = await supabase
-      .from('concerts')
-      .insert([{ 
-        artist_id, 
-        venue_id, 
-        date, 
-        time: time || null, 
-        ticket_price: isNaN(ticket_price) ? null : ticket_price,
-        status 
-      }]);
+    // Combine date and time
+    const dateTime = timeStr ? `${dateStr}T${timeStr}:00` : `${dateStr}T00:00:00`;
+    
+    // Find selected artist and venue names for title construction (optional)
+    const selectedArtist = artists.find(a => a.id.toString() === artistId);
+    const selectedVenue = venues.find(v => v.id.toString() === venueId);
+    const title = selectedArtist && selectedVenue ? `${selectedArtist.name} at ${selectedVenue.name}` : 'Concert';
 
-    setLoading(false);
-    if (error) {
-      toast.error('Failed to schedule concert');
-    } else {
+    const payload = {
+      artistId,
+      venueId,
+      date: dateTime,
+      price: ticket_price,
+      status,
+      title,
+      totalTickets: selectedVenue?.capacity || 0, //Setting totalTickets and availableTickets to 0 when venue capacity is unavailable could cause issues. If the venue exists but capacity is undefined/null, this creates an event with 0 tickets. Consider handling this case explicitly or making it required. TODO
+      availableTickets: selectedVenue?.capacity || 0,
+    };
+
+    try {
+      const res = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to schedule concert');
+      }
+
       toast.success('Concert scheduled successfully');
       setOpen(false);
       router.refresh();
-      window.location.reload();
+
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -92,7 +120,7 @@ export function ScheduleConcertDialog() {
                   </SelectTrigger>
                   <SelectContent className="bg-[#0B101B] border-border">
                     {artists.map((artist) => (
-                      <SelectItem key={artist.id} value={artist.id}>{artist.name}</SelectItem>
+                      <SelectItem key={artist.id} value={artist.id.toString()}>{artist.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -105,7 +133,7 @@ export function ScheduleConcertDialog() {
                   </SelectTrigger>
                   <SelectContent className="bg-[#0B101B] border-border">
                     {venues.map((venue) => (
-                      <SelectItem key={venue.id} value={venue.id}>{venue.name}</SelectItem>
+                      <SelectItem key={venue.id} value={venue.id.toString()}>{venue.name}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

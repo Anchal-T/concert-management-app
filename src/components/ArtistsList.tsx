@@ -92,7 +92,7 @@ export function ArtistsList() {
                 className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent/20">
+              <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-primary/10 to-accent/20">
                 <Music className="w-12 h-12 text-primary/20" />
               </div>
             )}
