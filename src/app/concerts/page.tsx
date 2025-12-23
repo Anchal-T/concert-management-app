@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  Search, 
-  Filter, 
-  Upload, 
-  MoreHorizontal, 
+import {
+  Search,
+  Filter,
+  Upload,
+  MoreHorizontal,
   Loader2,
   ChevronRight,
   Calendar,
@@ -15,13 +15,13 @@ import {
   Clock
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table';
 import { ScheduleConcertDialog } from '@/components/ScheduleConcertDialog';
 import Link from 'next/link';
@@ -91,8 +91,8 @@ export default function ConcertsPage() {
             <h2 className="text-lg font-bold">All Events ({concerts.length})</h2>
             <div className="relative group min-w-[300px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Search by event, location"
                 className="w-full bg-accent/20 border border-transparent focus:border-primary/20 rounded-lg py-2 pl-10 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground"
               />
@@ -156,11 +156,14 @@ export default function ConcertsPage() {
                     <TableCell className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <Ticket className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span className="text-sm font-bold">1,240</span>
-                        <span className="text-[10px] text-muted-foreground">/ 2,000</span>
+                        <span className="text-sm font-bold">{(concert.soldTickets || 0).toLocaleString()}</span>
+                        <span className="text-[10px] text-muted-foreground">/ {(concert.totalTickets || 0).toLocaleString()}</span>
                       </div>
                       <div className="w-24 h-1 bg-accent/30 rounded-full mt-2 overflow-hidden">
-                        <div className="h-full bg-primary w-[62%]" />
+                        <div
+                          className="h-full bg-primary"
+                          style={{ width: `${concert.totalTickets > 0 ? Math.min((concert.soldTickets / concert.totalTickets) * 100, 100) : 0}%` }}
+                        />
                       </div>
                     </TableCell>
                     <TableCell className="px-6 py-4">

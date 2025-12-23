@@ -4,15 +4,15 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Calendar, 
-  Clock, 
-  XCircle, 
-  CheckCircle2, 
-  Plus, 
-  Filter, 
-  Upload, 
-  Search, 
+import {
+  Calendar,
+  Clock,
+  XCircle,
+  CheckCircle2,
+  Plus,
+  Filter,
+  Upload,
+  Search,
   MoreHorizontal,
   ArrowUpRight,
   ArrowDownRight,
@@ -22,13 +22,13 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table';
 import { ScheduleConcertDialog } from './ScheduleConcertDialog';
 
@@ -45,17 +45,17 @@ export default function DashboardContent() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       setLoading(true);
-      
+
       try {
         const res = await fetch('/api/events');
         if (res.ok) {
           const allConcerts = await res.json();
           setConcerts(allConcerts);
-          
+
           const upcoming = allConcerts.filter((c: any) => c.status?.toLowerCase() === 'upcoming' || c.status?.toLowerCase() === 'scheduled').length;
           const ongoing = allConcerts.filter((c: any) => c.status?.toLowerCase() === 'ongoing' || c.status?.toLowerCase() === 'confirmed').length;
           const cancelled = allConcerts.filter((c: any) => c.status?.toLowerCase() === 'cancelled').length;
-          
+
           setStats({
             total: allConcerts.length,
             upcoming,
@@ -108,10 +108,10 @@ export default function DashboardContent() {
         </div>
         <div className="flex items-center gap-2 bg-accent/30 p-1 rounded-lg">
           {['1D', '7D', '1M', '3M', 'Custom'].map((period) => (
-            <Button 
-              key={period} 
-              variant={period === '7D' ? 'secondary' : 'ghost'} 
-              size="sm" 
+            <Button
+              key={period}
+              variant={period === '7D' ? 'secondary' : 'ghost'}
+              size="sm"
               className={cn(
                 "h-8 px-3 text-xs font-medium rounded-md transition-all",
                 period === '7D' ? 'bg-background shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
@@ -128,36 +128,28 @@ export default function DashboardContent() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-        <StatCard 
-          title="Total events" 
-          value={stats.total.toLocaleString()} 
-          delta="10%" 
-          isUp={true} 
-          icon={<div className="w-2 h-2 rounded-full bg-amber-500" />} 
+        <StatCard
+          title="Total events"
+          value={stats.total.toLocaleString()}
+          icon={<div className="w-2 h-2 rounded-full bg-amber-500" />}
           color="amber"
         />
-        <StatCard 
-          title="Upcoming events" 
-          value={stats.upcoming.toLocaleString()} 
-          delta="12%" 
-          isUp={true} 
-          icon={<div className="w-2 h-2 rounded-full bg-blue-500" />} 
+        <StatCard
+          title="Upcoming events"
+          value={stats.upcoming.toLocaleString()}
+          icon={<div className="w-2 h-2 rounded-full bg-blue-500" />}
           color="blue"
         />
-        <StatCard 
-          title="Ongoing events" 
-          value={stats.ongoing.toLocaleString()} 
-          delta="12%" 
-          isUp={false} 
-          icon={<div className="w-2 h-2 rounded-full bg-emerald-500" />} 
+        <StatCard
+          title="Ongoing events"
+          value={stats.ongoing.toLocaleString()}
+          icon={<div className="w-2 h-2 rounded-full bg-emerald-500" />}
           color="emerald"
         />
-        <StatCard 
-          title="Cancelled events" 
-          value={stats.cancelled.toLocaleString()} 
-          delta="5%" 
-          isUp={false} 
-          icon={<div className="w-2 h-2 rounded-full bg-rose-500" />} 
+        <StatCard
+          title="Cancelled events"
+          value={stats.cancelled.toLocaleString()}
+          icon={<div className="w-2 h-2 rounded-full bg-rose-500" />}
           color="rose"
         />
       </div>
@@ -168,8 +160,8 @@ export default function DashboardContent() {
             <h2 className="text-lg font-bold">Events ({concerts.length})</h2>
             <div className="relative group min-w-[300px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Search by event, location"
                 className="w-full bg-accent/20 border border-transparent focus:border-primary/20 rounded-lg py-2 pl-10 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground"
               />
@@ -205,8 +197,8 @@ export default function DashboardContent() {
                     <TableCell className="px-6 py-4">
                       <Link href={`/concerts/${concert.id}`} className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center overflow-hidden">
-                          <img 
-                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${concert.artist?.name}`} 
+                          <img
+                            src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${concert.artist?.name}`}
                             alt={concert.artist?.name}
                             className="w-full h-full object-cover"
                           />
@@ -221,7 +213,7 @@ export default function DashboardContent() {
                       {concert.venue?.name}
                     </TableCell>
                     <TableCell className="px-6 py-4 text-sm text-muted-foreground">
-                      {Math.floor(Math.random() * 5000).toLocaleString()}
+                      {(concert.soldTickets || 0).toLocaleString()}
                     </TableCell>
                     <TableCell className="px-6 py-4">
                       {getStatusBadge(concert.status)}
@@ -252,10 +244,10 @@ export default function DashboardContent() {
             <Button variant="outline" size="icon" className="h-8 w-8 rounded-lg bg-accent/20 border-transparent hover:bg-accent/40" disabled>&lt;</Button>
             <div className="flex items-center gap-1">
               {[1, 2, 3, 4, 5].map((page) => (
-                <Button 
+                <Button
                   key={page}
-                  variant="outline" 
-                  size="sm" 
+                  variant="outline"
+                  size="sm"
                   className={cn(
                     "h-8 w-8 rounded-lg text-xs font-medium transition-all",
                     page === 2 ? "bg-primary text-primary-foreground border-primary" : "bg-accent/20 border-transparent hover:bg-accent/40 text-muted-foreground"
@@ -273,11 +265,9 @@ export default function DashboardContent() {
   );
 }
 
-function StatCard({ title, value, delta, isUp, icon, color }: { 
-  title: string, 
-  value: string | number, 
-  delta: string, 
-  isUp: boolean, 
+function StatCard({ title, value, icon, color }: {
+  title: string,
+  value: string | number,
   icon: React.ReactNode,
   color: 'amber' | 'blue' | 'emerald' | 'rose'
 }) {
@@ -290,16 +280,8 @@ function StatCard({ title, value, delta, isUp, icon, color }: {
           </div>
           <p className="text-sm font-medium text-muted-foreground">{title}</p>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-1">
           <div className="text-3xl font-bold tracking-tight">{value}</div>
-          <div className={cn(
-            "flex items-center text-xs font-medium",
-            isUp ? "text-emerald-500" : "text-rose-500"
-          )}>
-            {isUp ? <ArrowUpRight className="w-3 h-3 mr-1" /> : <ArrowDownRight className="w-3 h-3 mr-1" />}
-            {delta}
-            <span className="text-muted-foreground font-normal ml-1.5">From last week</span>
-          </div>
         </div>
       </CardContent>
     </Card>

@@ -3,12 +3,12 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { 
-  LayoutDashboard, 
-  Calendar, 
-  Users, 
-  Tags, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Calendar,
+  Users,
+  Tags,
+  Settings,
   HelpCircle,
   ChevronRight,
   Music2,
@@ -20,12 +20,12 @@ const navigation = [
   { name: 'Events', href: '/concerts', icon: Calendar },
   { name: 'Artists', href: '/artists', icon: Users },
   { name: 'Venues', href: '/venues', icon: MapPin },
-  { name: 'Tags', href: '#', icon: Tags },
+  { name: 'Tags', href: '/tags', icon: Tags },
 ];
 
 const secondaryNavigation = [
-  { name: 'Settings', href: '#', icon: Settings },
-  { name: 'Help', href: '#', icon: HelpCircle },
+  { name: 'Settings', href: '/settings', icon: Settings },
+  { name: 'Help', href: '/help', icon: HelpCircle },
 ];
 
 export function Sidebar() {

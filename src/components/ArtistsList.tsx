@@ -3,12 +3,12 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { 
-  User, 
-  Trash2, 
-  Edit2, 
-  Loader2, 
-  Music, 
+import {
+  User,
+  Trash2,
+  Edit2,
+  Loader2,
+  Music,
   MoreVertical,
   Star,
   ExternalLink
@@ -96,7 +96,7 @@ export function ArtistsList() {
               // So `artist.image_url` might be undefined, and `artist.imageUrl` should be used.
               // Let's check schema.ts again.
               <img
-                src={artist.imageUrl || artist.image_url} 
+                src={artist.imageUrl || artist.image_url}
                 alt={artist.name}
                 className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700"
               />
@@ -116,7 +116,7 @@ export function ArtistsList() {
                   <DropdownMenuItem className="gap-2">
                     <Edit2 className="w-4 h-4" /> Edit Artist
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     className="gap-2 text-destructive focus:text-destructive"
                     onClick={() => handleDelete(artist.id, artist.name)}
                   >
@@ -137,11 +137,11 @@ export function ArtistsList() {
                 </Badge>
               </div>
             </div>
-            
+
             <div className="mt-4 pt-4 border-t border-border/50 flex items-center justify-between">
               <div className="flex items-center gap-1 text-amber-500">
                 <Star className="w-3 h-3 fill-current" />
-                <span className="text-xs font-bold">4.9</span>
+                <span className="text-xs font-bold">{artist.rating ? Number(artist.rating).toFixed(1) : 'N/A'}</span>
               </div>
               <Button variant="ghost" size="sm" className="h-8 text-xs text-muted-foreground hover:text-foreground gap-1">
                 View Profile <ExternalLink className="w-3 h-3" />

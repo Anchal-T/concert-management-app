@@ -1,8 +1,8 @@
 import { db } from '@/db';
 import { events } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
-import { ResultSetHeader } from 'mysql2';
 import { EventInput } from '@/lib/validations/event';
+import type { ResultSetHeader } from 'mysql2';
 
 export const eventService = {
   async getAll() {
@@ -29,7 +29,7 @@ export const eventService = {
     // Cast to any to handle driver-specific return types safely
     const [result] = await db.insert(events).values(data as any) as unknown as [ResultSetHeader, any];
     const insertId = result.insertId;
-    
+
     const created = await this.getById(insertId);
     if (!created) throw new Error("Failed to create event");
     return created;
@@ -40,8 +40,7 @@ export const eventService = {
 
     const updated = await this.getById(id);
     if (!updated) throw new Error("Failed to update event");
-    const result = await db.delete(events).where(eq(events.id, id)) as unknown as ResultSetHeader;
-    return result.affectedRows > 0;
+    return updated;
   },
 
   async delete(id: number) {
