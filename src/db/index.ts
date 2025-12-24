@@ -13,24 +13,30 @@ const globalForDb = globalThis as unknown as {
   pool: mysql.Pool | undefined;
 };
 
-// Optimized connection pool for local MySQL
+// Optimized connection pool for serverless environment
 const pool = globalForDb.pool ?? mysql.createPool({
   uri: connectionString,
-  // Connection pool settings for better performance
+  // Reduced connection limits for serverless
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: process.env.NODE_ENV === 'production' ? 2 : 10,
   queueLimit: 0,
-  // Keep connections alive to reduce overhead
-  enableKeepAlive: true,
-  keepAliveInitialDelay: 0,
-  // Connection timeout settings
+  // Disable keep-alive in serverless to prevent hanging connections
+  enableKeepAlive: false,
+  // Reduced timeouts for serverless
   connectTimeout: 10000,
-  // Idle timeout - close connections after 30 seconds of inactivity
-  idleTimeout: 30000,
+  // Shorter idle timeout for serverless
+  idleTimeout: 10000,
+  // Important: Close connections after query in serverless
+  maxIdle: process.env.NODE_ENV === 'production' ? 2 : 10,
 });
 
 if (process.env.NODE_ENV !== 'production') {
   globalForDb.pool = pool;
 }
 
+/**
+ * Database instance configured for the application.
+ * Uses MySQL connection pool with Drizzle ORM.
+ * Optimized for both local development and serverless deployment.
+ */
 export const db = drizzle(pool, { schema, mode: 'default' });
