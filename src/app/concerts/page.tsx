@@ -4,15 +4,16 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Search,
-  Filter,
-  Upload,
   MoreHorizontal,
   Loader2,
   Calendar,
   MapPin,
   Ticket,
   Clock,
-  XCircle
+  XCircle,
+  Eye,
+  Edit2,
+  Trash2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import {
@@ -23,7 +24,17 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ScheduleConcertDialog } from '@/components/ScheduleConcertDialog';
+import { EditEventDialog } from '@/components/EditEventDialog';
+import { ConfirmActionDialog } from '@/components/ConfirmActionDialog';
+import { toast } from 'sonner';
 import Link from 'next/link';
 
 type TimeRangeKey = '1D' | '7D' | '1M' | '3M' | 'CUSTOM';
@@ -56,13 +67,14 @@ function normalizeStatus(status: unknown): 'upcoming' | 'ongoing' | 'cancelled' 
 }
 
 // Computes a [start,end) window for the selected time-range.
+// For event management, we look FORWARD from now (upcoming events) instead of backward.
 function getWindow(range: TimeRangeKey, now: Date): { start: Date; end: Date; days: number | null } {
-  const end = now;
-  if (range === 'CUSTOM') return { start: new Date(0), end, days: null };
+  const start = now;
+  if (range === 'CUSTOM') return { start: new Date(0), end: new Date('2099-12-31'), days: null };
 
   const days = range === '1D' ? 1 : range === '7D' ? 7 : range === '1M' ? 30 : 90;
-  const start = new Date(end);
-  start.setDate(start.getDate() - days);
+  const end = new Date(start);
+  end.setDate(end.getDate() + days);
   return { start, end, days };
 }
 
@@ -110,6 +122,24 @@ export default function ConcertsPage() {
     fetchConcerts();
   }, []);
 
+  // Handle deleting an event
+  const handleDeleteEvent = async (eventId: string | number) => {
+    try {
+      const res = await fetch(`/api/events/${eventId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Failed to delete event');
+      toast.success('Event deleted successfully');
+      // Refresh the list
+      const newRes = await fetch('/api/events');
+      if (newRes.ok) {
+        const data = (await newRes.json()) as EventLike[];
+        setConcerts(data || []);
+      }
+    } catch (error) {
+      console.error('Failed to delete event:', error);
+      toast.error('Failed to delete event');
+    }
+  };
+
   useEffect(() => {
     setPage(1);
   }, [range, search]);
@@ -142,8 +172,9 @@ export default function ConcertsPage() {
 
   const now = new Date();
   const { start, end, days } = getWindow(range, now);
-  const previousWindowStart = days === null ? new Date(0) : new Date(start.getTime() - days * 24 * 60 * 60 * 1000);
-  const previousWindowEnd = days === null ? new Date(0) : start;
+  // For comparison, previous window looks forward from (now - days)
+  const previousWindowStart = days === null ? new Date(0) : new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+  const previousWindowEnd = days === null ? new Date(0) : now;
 
   const inWindow = (event: EventLike, windowStart: Date, windowEnd: Date) => {
     const date = parseEventDate(event.date);
@@ -191,11 +222,11 @@ export default function ConcertsPage() {
   const searchLower = search.trim().toLowerCase();
   const searchedEvents = searchLower
     ? baseEvents.filter((event) => {
-        const artist = event.artist?.name ?? '';
-        const venue = event.venue?.name ?? '';
-        const city = event.venue?.city ?? '';
-        return `${artist} ${venue} ${city}`.toLowerCase().includes(searchLower);
-      })
+      const artist = event.artist?.name ?? '';
+      const venue = event.venue?.name ?? '';
+      const city = event.venue?.city ?? '';
+      return `${artist} ${venue} ${city}`.toLowerCase().includes(searchLower);
+    })
     : baseEvents;
 
   const totalPages = Math.max(1, Math.ceil(searchedEvents.length / pageSize));
@@ -209,8 +240,7 @@ export default function ConcertsPage() {
     const text = `${abs < 0.1 ? 0 : abs.toFixed(0)}%`;
     return (
       <div className={
-        `flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold ${
-          isPositive ? 'text-emerald-500 bg-emerald-500/10' : 'text-rose-500 bg-rose-500/10'
+        `flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold ${isPositive ? 'text-emerald-500 bg-emerald-500/10' : 'text-rose-500 bg-rose-500/10'
         }`
       }>
         <span className={isPositive ? 'rotate-0' : 'rotate-180'}>↑</span> {text}
@@ -235,10 +265,9 @@ export default function ConcertsPage() {
               type="button"
               onClick={() => setRange(key)}
               className={
-                `px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors ${
-                  range === key
-                    ? 'bg-accent/40 text-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
+                `px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-colors ${range === key
+                  ? 'bg-accent/40 text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
                 }`
               }
             >
@@ -314,12 +343,6 @@ export default function ConcertsPage() {
             </div>
           </div>
           <div className="flex items-center gap-3 w-full md:w-auto">
-            <Button variant="outline" className="rounded-lg h-10 px-4 text-sm font-medium bg-accent/20 border-transparent hover:bg-accent/40">
-              Filter <Filter className="w-4 h-4 ml-2" />
-            </Button>
-            <Button variant="outline" size="icon" className="rounded-lg h-10 w-10 bg-accent/20 border-transparent hover:bg-accent/40">
-              <Upload className="w-4 h-4" />
-            </Button>
             <ScheduleConcertDialog
               triggerLabel="Create Event"
               triggerClassName="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg shadow-lg shadow-primary/20 px-5 h-10 font-bold"
@@ -398,9 +421,33 @@ export default function ConcertsPage() {
                       {getStatusBadge(concert.status || 'scheduled')}
                     </TableCell>
                     <TableCell className="px-6 py-4">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-accent/40">
-                        <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-accent/40">
+                            <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48 bg-[#0B101B] border-border/50">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/concerts/${concert.id}`} className="flex items-center gap-2 cursor-pointer">
+                              <Eye className="w-4 h-4" /> View Details
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator className="bg-border/50" />
+                          <ConfirmActionDialog
+                            title="Delete Event"
+                            description="This will permanently delete this event. This action cannot be undone."
+                            confirmLabel="Delete"
+                            confirmVariant="destructive"
+                            onConfirm={() => handleDeleteEvent(concert.id)}
+                            trigger={
+                              <button className="flex w-full items-center gap-2 px-2 py-1.5 text-sm text-rose-500 hover:bg-rose-500/10 rounded-sm cursor-pointer">
+                                <Trash2 className="w-4 h-4" /> Delete Event
+                              </button>
+                            }
+                          />
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))
@@ -439,8 +486,7 @@ export default function ConcertsPage() {
                     type="button"
                     onClick={() => setPage(value)}
                     className={
-                      `h-8 w-8 rounded-lg text-xs font-bold transition-colors ${
-                        isActive ? 'bg-accent/40 text-foreground' : 'text-muted-foreground hover:bg-accent/20 hover:text-foreground'
+                      `h-8 w-8 rounded-lg text-xs font-bold transition-colors ${isActive ? 'bg-accent/40 text-foreground' : 'text-muted-foreground hover:bg-accent/20 hover:text-foreground'
                       }`
                     }
                   >

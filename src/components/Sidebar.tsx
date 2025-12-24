@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
 import {
   LayoutDashboard,
   Calendar,
@@ -103,7 +104,10 @@ export function Sidebar() {
         </div>
 
         <div className="px-4">
-          <button className="w-full group flex items-center gap-3.5 px-4 py-4 rounded-2xl text-rose-500 hover:bg-rose-500/10 transition-all duration-300">
+          <button
+            onClick={() => toast.info('Logout functionality requires authentication setup')}
+            className="w-full group flex items-center gap-3.5 px-4 py-4 rounded-2xl text-rose-500 hover:bg-rose-500/10 transition-all duration-300"
+          >
             <LogOut className="w-5 h-5" />
             <span className="font-bold text-sm tracking-tight">Logout</span>
           </button>

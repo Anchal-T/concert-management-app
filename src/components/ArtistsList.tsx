@@ -30,6 +30,7 @@ import { AddArtistDialog } from './AddArtistDialog';
 export function ArtistsList() {
   const [artists, setArtists] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchArtists = async () => {
     setLoading(true);
@@ -64,6 +65,16 @@ export function ArtistsList() {
     }
   };
 
+  // Filter artists based on search query
+  const filteredArtists = artists.filter((artist) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase().trim();
+    const name = (artist.name || '').toLowerCase();
+    const genre = (artist.genre || '').toLowerCase();
+    const bio = (artist.bio || '').toLowerCase();
+    return name.includes(query) || genre.includes(query) || bio.includes(query);
+  });
+
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center py-32 gap-4">
@@ -83,14 +94,13 @@ export function ArtistsList() {
             <input
               type="text"
               placeholder="Search artists by name, genre..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-accent/20 border border-transparent focus:border-primary/20 rounded-xl py-2.5 pl-12 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground"
             />
           </div>
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <Button variant="outline" className="rounded-xl h-11 px-5 text-sm font-bold bg-accent/20 border-transparent hover:bg-accent/40 transition-all">
-            Filter <Filter className="w-4 h-4 ml-2" />
-          </Button>
           <AddArtistDialog />
         </div>
       </div>
@@ -107,7 +117,7 @@ export function ArtistsList() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          {artists.map((artist) => (
+          {filteredArtists.map((artist) => (
             <div key={artist.id} className="group bg-card/40 border border-border/50 rounded-3xl overflow-hidden hover:border-primary/30 transition-all duration-500 hover:shadow-2xl hover:shadow-primary/5">
               <div className="aspect-[4/5] relative overflow-hidden">
                 <img
@@ -116,7 +126,7 @@ export function ArtistsList() {
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#04070D] via-transparent to-transparent opacity-80" />
-                
+
                 <div className="absolute top-4 right-4">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -131,7 +141,7 @@ export function ArtistsList() {
                       <DropdownMenuItem className="gap-2 py-2.5 cursor-pointer rounded-lg focus:bg-primary/10 focus:text-primary">
                         <ExternalLink className="w-4 h-4" /> View Details
                       </DropdownMenuItem>
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         className="gap-2 py-2.5 cursor-pointer rounded-lg text-rose-500 focus:bg-rose-500/10 focus:text-rose-500"
                         onClick={() => handleDelete(artist.id, artist.name)}
                       >
@@ -146,29 +156,16 @@ export function ArtistsList() {
                     <Badge className="bg-primary/20 text-primary border-primary/20 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md">
                       {artist.genre || 'Artist'}
                     </Badge>
-                    <div className="flex items-center gap-1 text-amber-400 text-[10px] font-bold">
-                      <Star className="w-3 h-3 fill-current" /> 4.9
-                    </div>
                   </div>
                   <h3 className="text-xl font-black tracking-tight text-white mb-1 group-hover:text-primary transition-colors">{artist.name}</h3>
-                  <p className="text-white/60 text-xs font-medium line-clamp-1">Nashville, TN • 12 Upcoming Events</p>
+                  {artist.bio && <p className="text-white/60 text-xs font-medium line-clamp-1">{artist.bio}</p>}
                 </div>
               </div>
-              
+
               <div className="p-6 flex items-center justify-between border-t border-border/10">
-                <div className="flex -space-x-2">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="w-7 h-7 rounded-full border-2 border-[#04070D] bg-accent overflow-hidden">
-                      <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${artist.name}${i}`} alt="Fan" />
-                    </div>
-                  ))}
-                  <div className="w-7 h-7 rounded-full border-2 border-[#04070D] bg-accent/50 flex items-center justify-center text-[8px] font-bold text-white">
-                    +2k
-                  </div>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span>Added {artist.createdAt ? new Date(artist.createdAt).toLocaleDateString() : 'recently'}</span>
                 </div>
-                <Button variant="ghost" size="sm" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary hover:bg-transparent p-0 h-auto group/btn">
-                  View Schedule <ArrowUpRight className="w-3 h-3 ml-1 transition-transform group-hover/btn:-translate-y-0.5 group-hover/btn:translate-x-0.5" />
-                </Button>
               </div>
             </div>
           ))}

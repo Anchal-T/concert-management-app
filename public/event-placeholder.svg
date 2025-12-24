@@ -1,0 +1,24 @@
+<svg width="1200" height="600" viewBox="0 0 1200 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="600" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0B101B"/>
+      <stop offset="1" stop-color="#04070D"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="150" y1="90" x2="1050" y2="510" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="600" rx="48" fill="url(#bg)"/>
+  <rect x="40" y="40" width="1120" height="520" rx="40" fill="url(#glow)"/>
+
+  <g opacity="0.75">
+    <path d="M494 270c0-33.137 26.863-60 60-60h92c33.137 0 60 26.863 60 60v60c0 33.137-26.863 60-60 60h-92c-33.137 0-60-26.863-60-60v-60z" stroke="#FFFFFF" stroke-opacity="0.25" stroke-width="6"/>
+    <path d="M538 260h124" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="6" stroke-linecap="round"/>
+    <path d="M538 300h88" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="6" stroke-linecap="round"/>
+    <path d="M538 340h104" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="6" stroke-linecap="round"/>
+  </g>
+
+  <text x="600" y="440" text-anchor="middle" fill="#FFFFFF" fill-opacity="0.55" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto" font-size="22" font-weight="700" letter-spacing="0.18em">NO EVENT PHOTO</text>
+</svg>

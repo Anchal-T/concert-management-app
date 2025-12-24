@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import {
@@ -29,6 +29,7 @@ import { AddVenueDialog } from './AddVenueDialog';
 export function VenuesList() {
   const [venues, setVenues] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchVenues = async () => {
     setLoading(true);
@@ -62,6 +63,16 @@ export function VenuesList() {
     }
   };
 
+  // Filter venues based on search query
+  const filteredVenues = venues.filter((venue) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase().trim();
+    const name = (venue.name || '').toLowerCase();
+    const city = (venue.city || '').toLowerCase();
+    const state = (venue.state || '').toLowerCase();
+    return name.includes(query) || city.includes(query) || state.includes(query);
+  });
+
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center py-32 gap-4">
@@ -81,14 +92,13 @@ export function VenuesList() {
             <input
               type="text"
               placeholder="Search by venue name, city..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-accent/20 border border-transparent focus:border-primary/20 rounded-xl py-2.5 pl-12 pr-4 text-sm outline-none transition-all placeholder:text-muted-foreground"
             />
           </div>
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <Button variant="outline" className="rounded-xl h-11 px-5 text-sm font-bold bg-accent/20 border-transparent hover:bg-accent/40 transition-all">
-            Filter <Filter className="w-4 h-4 ml-2" />
-          </Button>
           <AddVenueDialog />
         </div>
       </div>
@@ -117,7 +127,7 @@ export function VenuesList() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {venues.map((venue) => (
+                {filteredVenues.map((venue) => (
                   <TableRow key={venue.id} className="group hover:bg-accent/10 border-border/50 transition-colors">
                     <TableCell className="px-8 py-5">
                       <div className="flex items-center gap-4">
@@ -152,9 +162,9 @@ export function VenuesList() {
                         <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-xl">
                           <Edit2 className="w-4 h-4" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="h-9 w-9 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 rounded-xl"
                           onClick={() => handleDelete(venue.id, venue.name)}
                         >
