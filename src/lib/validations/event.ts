@@ -9,7 +9,7 @@ export const eventSchema = z.object({
   // The UI sends 'time' separately usually.
 
   price: z.coerce.number().nonnegative("Price cannot be negative"),
-  status: z.enum(['Upcoming', 'Ongoing', 'Completed', 'Cancelled']).optional(),
+  status: z.enum(['Upcoming', 'Ongoing', 'Completed', 'Cancelled', 'draft', 'scheduled', 'confirmed']).optional(),
 
   // Optional fields that might be passed or derived
   title: z.string().optional(),

@@ -76,8 +76,8 @@ export function ScheduleConcertDialog({
       price: ticket_price,
       status,
       title,
-      totalTickets: selectedVenue?.capacity || 0, //Setting totalTickets and availableTickets to 0 when venue capacity is unavailable could cause issues. If the venue exists but capacity is undefined/null, this creates an event with 0 tickets. Consider handling this case explicitly or making it required. TODO
-      availableTickets: selectedVenue?.capacity || 0,
+      totalTickets: selectedVenue?.capacity || 0,
+      soldTickets: 0,
     };
 
     try {
