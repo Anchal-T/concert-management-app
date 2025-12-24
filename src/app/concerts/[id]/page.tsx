@@ -112,6 +112,31 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
     }
   }, [id]);
 
+  const updateEventStatus = useCallback(
+    async (nextStatus: string) => {
+      if (!isEventIdValid) return;
+      const res = await fetch(`/api/events/${eventId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: nextStatus })
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData?.error || 'Failed to update event');
+      }
+    },
+    [eventId, isEventIdValid]
+  );
+
+  const deleteEvent = useCallback(async () => {
+    if (!isEventIdValid) return;
+    const res = await fetch(`/api/events/${eventId}`, { method: 'DELETE' });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData?.error || 'Failed to delete event');
+    }
+  }, [eventId, isEventIdValid]);
+
   useEffect(() => {
     loadConcertData();
   }, [loadConcertData]);
@@ -143,31 +168,6 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
   const eventDate = parseDate(concert.date);
   const statusLabel = String(concert.status || 'Draft');
   const isCancelled = statusLabel.toLowerCase() === 'cancelled';
-
-  const updateEventStatus = useCallback(
-    async (nextStatus: string) => {
-      if (!isEventIdValid) return;
-      const res = await fetch(`/api/events/${eventId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: nextStatus })
-      });
-      if (!res.ok) {
-        const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData?.error || 'Failed to update event');
-      }
-    },
-    [eventId, isEventIdValid]
-  );
-
-  const deleteEvent = useCallback(async () => {
-    if (!isEventIdValid) return;
-    const res = await fetch(`/api/events/${eventId}`, { method: 'DELETE' });
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData?.error || 'Failed to delete event');
-    }
-  }, [eventId, isEventIdValid]);
 
   // Summary stats carousel
   const summaryStats = [
