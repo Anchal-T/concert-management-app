@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { Search, Bell, User, Settings, Command, Loader2, Calendar } from 'lucide-react';
+import { Search, Bell, User, Settings, Command, Loader2, Calendar, Menu } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useSidebar } from './SidebarContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +27,7 @@ interface CurrentUser {
 export function TopBar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { toggle } = useSidebar();
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [notificationCount, setNotificationCount] = useState<number | null>(null);
@@ -112,9 +114,18 @@ export function TopBar() {
   };
 
   return (
-    <header className="fixed top-0 right-0 left-64 h-20 border-b border-border/50 bg-[#04070D]/80 backdrop-blur-md z-40 flex items-center justify-between px-8">
+    <header className="fixed top-0 right-0 lg:left-64 left-0 h-20 border-b border-border/50 bg-[#04070D]/80 backdrop-blur-md z-40 flex items-center justify-between px-4 md:px-8">
       <div className="flex items-center gap-4">
-        <nav className="flex items-center gap-2 text-sm font-medium">
+        {/* Mobile menu toggle */}
+        <button
+          onClick={toggle}
+          className="lg:hidden p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/20 transition-colors"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+
+        {/* Breadcrumb - hidden on mobile */}
+        <nav className="hidden md:flex items-center gap-2 text-sm font-medium">
           {getBreadcrumbSegments().map((segment, index, all) => {
             const isLast = index === all.length - 1;
             return (
@@ -125,9 +136,13 @@ export function TopBar() {
             );
           })}
         </nav>
+
+        {/* Mobile page title */}
+        <h1 className="md:hidden text-lg font-bold text-foreground">{getPageTitle()}</h1>
       </div>
 
-      <form onSubmit={handleSearchSubmit} className="flex-1 max-w-xl px-8">
+      {/* Search - hidden on mobile */}
+      <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-xl px-8">
         <div className="relative group w-full">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
           <input
@@ -143,7 +158,7 @@ export function TopBar() {
         </div>
       </form>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-3 md:gap-6">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className="relative p-2 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-xl transition-all">
@@ -225,4 +240,5 @@ export function TopBar() {
     </header>
   );
 }
+
 

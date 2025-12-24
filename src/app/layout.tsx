@@ -6,6 +6,7 @@ import Script from "next/script";
 import { Sidebar } from "@/components/Sidebar";
 import { TopBar } from "@/components/TopBar";
 import { Toaster } from "@/components/ui/sonner";
+import { SidebarProvider } from "@/components/SidebarContext";
 
 export const metadata: Metadata = {
   title: "ConcertHub | Management",
@@ -31,16 +32,18 @@ export default function RootLayout({
           data-debug="true"
           data-custom-data='{"appName": "YourApp", "version": "1.0.0", "greeting": "hi"}'
         />
-        
-        <div className="flex min-h-screen bg-[#04070D]">
-          <Sidebar />
-          <div className="flex-1 pl-64">
-            <TopBar />
-            <main className="pt-20 pb-12 px-8 min-h-screen bg-[#04070D]">
-              {children}
-            </main>
+
+        <SidebarProvider>
+          <div className="flex min-h-screen bg-[#04070D]">
+            <Sidebar />
+            <div className="flex-1 lg:pl-64 pl-0 transition-[padding] duration-300">
+              <TopBar />
+              <main className="pt-20 pb-12 px-4 md:px-8 min-h-screen bg-[#04070D]">
+                {children}
+              </main>
+            </div>
           </div>
-        </div>
+        </SidebarProvider>
 
         <Toaster />
         <VisualEditsMessenger />

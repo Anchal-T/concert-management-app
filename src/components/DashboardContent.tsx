@@ -286,9 +286,9 @@ export default function DashboardContent() {
   const featuredArtistImage = featuredConcert?.artist?.imageUrl || featuredConcert?.artist?.image_url || null;
 
   return (
-    <div className="space-y-8 max-w-[1600px] mx-auto">
+    <div className="space-y-6 md:space-y-8 max-w-[1600px] mx-auto">
       {/* Top Section: Event Summary & Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
         {/* Main Event Card */}
         <div className="lg:col-span-9 backdrop-blur-[25px] bg-card/20 border border-border/40 rounded-xl overflow-hidden relative">
           <div className="relative">
@@ -324,180 +324,180 @@ export default function DashboardContent() {
             </div>
           </div>
 
-          <div className="p-6 pt-14">
-            <div className="space-y-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-3">
-                      <h1 className="text-2xl font-bold tracking-tight text-foreground line-clamp-1">
-                        {featuredTitle}
-                      </h1>
-                      <div className="flex items-center gap-2 px-3 py-1 rounded-full border border-border/40 bg-accent/10">
-                        <div className="w-2 h-2 rounded-full bg-primary" />
-                        <span className="text-sm capitalize">{featuredStatus}</span>
-                      </div>
+          <div className="p-4 md:p-6 pt-14">
+            <div className="space-y-4 md:space-y-6">
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-3">
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground line-clamp-1">
+                      {featuredTitle}
+                    </h1>
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full border border-border/40 bg-accent/10">
+                      <div className="w-2 h-2 rounded-full bg-primary" />
+                      <span className="text-sm capitalize">{featuredStatus}</span>
                     </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {isFeaturedEventValid && (
-                      <EditEventDialog
-                        event={featuredConcert}
-                        onSuccess={refreshDashboardData}
-                        trigger={
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8 rounded-lg bg-accent/10 border-border/40 hover:bg-accent/20"
-                            aria-label="Edit"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                        }
-                      />
-                    )}
-
-                    {isFeaturedEventValid && (
-                      <ConfirmActionDialog
-                        title={isFeaturedCancelled ? 'Enable Event' : 'Disable Event'}
-                        description={
-                          isFeaturedCancelled
-                            ? 'This will mark the event as scheduled again.'
-                            : 'This will mark the event as cancelled. You can re-enable it later.'
-                        }
-                        confirmLabel={isFeaturedCancelled ? 'Enable' : 'Disable'}
-                        confirmVariant="default"
-                        onConfirm={async () => {
-                          try {
-                            await updateFeaturedStatus(isFeaturedCancelled ? 'scheduled' : 'cancelled');
-                            toast.success(isFeaturedCancelled ? 'Event enabled' : 'Event disabled');
-                            await refreshDashboardData();
-                            router.refresh();
-                          } catch (error: any) {
-                            toast.error(error?.message || 'Failed to update event');
-                          }
-                        }}
-                        trigger={
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8 rounded-lg bg-accent/10 border-border/40 hover:bg-accent/20"
-                            aria-label={isFeaturedCancelled ? 'Enable' : 'Disable'}
-                          >
-                            <Ban className="w-4 h-4" />
-                          </Button>
-                        }
-                      />
-                    )}
-
-                    {isFeaturedEventValid && (
-                      <ConfirmActionDialog
-                        title="Delete Event"
-                        description="This permanently deletes the event and its associated data. This action cannot be undone."
-                        confirmLabel="Delete"
-                        confirmVariant="destructive"
-                        onConfirm={async () => {
-                          try {
-                            await deleteFeaturedEvent();
-                            toast.success('Event deleted');
-                            await refreshDashboardData();
-                            router.refresh();
-                          } catch (error: any) {
-                            toast.error(error?.message || 'Failed to delete event');
-                          }
-                        }}
-                        trigger={
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8 rounded-lg bg-accent/10 border-border/40 hover:bg-rose-500/20 hover:text-rose-500"
-                            aria-label="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        }
-                      />
-                    )}
                   </div>
                 </div>
 
-                <p className="mt-4 text-muted-foreground text-sm leading-relaxed line-clamp-2">
-                  {featuredConcert?.description || featuredConcert?.artist?.bio || 'No description available.'}
-                </p>
+                <div className="flex items-center gap-2 mt-2 sm:mt-0">
+                  {isFeaturedEventValid && (
+                    <EditEventDialog
+                      event={featuredConcert}
+                      onSuccess={refreshDashboardData}
+                      trigger={
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8 rounded-lg bg-accent/10 border-border/40 hover:bg-accent/20"
+                          aria-label="Edit"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+                      }
+                    />
+                  )}
 
-                <div className="mt-6 flex gap-3 items-start">
-                  <div className="flex-1 border border-border/40 rounded-lg bg-accent/10 p-4">
-                    <div className="flex flex-col gap-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
-                          <Calendar className="w-4 h-4 text-primary" />
-                        </div>
-                        <p className="text-sm text-foreground">
-                          {featuredDate ? format(featuredDate, 'dd MMM, yyyy') : 'TBD'}
-                          {featuredDate ? `    ${format(featuredDate, 'p')}` : ''}
-                          <span className="text-muted-foreground"> (Local time)</span>
-                        </p>
+                  {isFeaturedEventValid && (
+                    <ConfirmActionDialog
+                      title={isFeaturedCancelled ? 'Enable Event' : 'Disable Event'}
+                      description={
+                        isFeaturedCancelled
+                          ? 'This will mark the event as scheduled again.'
+                          : 'This will mark the event as cancelled. You can re-enable it later.'
+                      }
+                      confirmLabel={isFeaturedCancelled ? 'Enable' : 'Disable'}
+                      confirmVariant="default"
+                      onConfirm={async () => {
+                        try {
+                          await updateFeaturedStatus(isFeaturedCancelled ? 'scheduled' : 'cancelled');
+                          toast.success(isFeaturedCancelled ? 'Event enabled' : 'Event disabled');
+                          await refreshDashboardData();
+                          router.refresh();
+                        } catch (error: any) {
+                          toast.error(error?.message || 'Failed to update event');
+                        }
+                      }}
+                      trigger={
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8 rounded-lg bg-accent/10 border-border/40 hover:bg-accent/20"
+                          aria-label={isFeaturedCancelled ? 'Enable' : 'Disable'}
+                        >
+                          <Ban className="w-4 h-4" />
+                        </Button>
+                      }
+                    />
+                  )}
+
+                  {isFeaturedEventValid && (
+                    <ConfirmActionDialog
+                      title="Delete Event"
+                      description="This permanently deletes the event and its associated data. This action cannot be undone."
+                      confirmLabel="Delete"
+                      confirmVariant="destructive"
+                      onConfirm={async () => {
+                        try {
+                          await deleteFeaturedEvent();
+                          toast.success('Event deleted');
+                          await refreshDashboardData();
+                          router.refresh();
+                        } catch (error: any) {
+                          toast.error(error?.message || 'Failed to delete event');
+                        }
+                      }}
+                      trigger={
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-8 w-8 rounded-lg bg-accent/10 border-border/40 hover:bg-rose-500/20 hover:text-rose-500"
+                          aria-label="Delete"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      }
+                    />
+                  )}
+                </div>
+              </div>
+
+              <p className="mt-4 text-muted-foreground text-sm leading-relaxed line-clamp-2">
+                {featuredConcert?.description || featuredConcert?.artist?.bio || 'No description available.'}
+              </p>
+
+              <div className="mt-4 md:mt-6 flex flex-col md:flex-row gap-3 items-stretch">
+                <div className="flex-1 border border-border/40 rounded-lg bg-accent/10 p-3 md:p-4">
+                  <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
+                        <Calendar className="w-4 h-4 text-primary" />
                       </div>
-
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
-                          <Tag className="w-4 h-4 text-primary" />
-                        </div>
-                        <p className="text-sm text-foreground line-clamp-1">
-                          {featuredTags.length
-                            ? featuredTags.map((t) => t.name).join(', ')
-                            : 'No tags'}
-                        </p>
-                      </div>
-
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
-                          <MapPin className="w-4 h-4 text-primary" />
-                        </div>
-                        <p className="text-sm text-foreground line-clamp-1">
-                          {featuredVenueAddress || 'TBD'}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="w-56 flex flex-col gap-3">
-                    <div className="border border-border/40 rounded-lg bg-accent/10 p-3">
-                      <p className="text-xs text-muted-foreground">Policy</p>
-                      <p className="text-sm text-foreground mt-2 line-clamp-1">
-                        {(featuredConcert?.artist?.name || 'Event') + ' Policy'}
+                      <p className="text-sm text-foreground">
+                        {featuredDate ? format(featuredDate, 'dd MMM, yyyy') : 'TBD'}
+                        {featuredDate ? `    ${format(featuredDate, 'p')}` : ''}
+                        <span className="text-muted-foreground"> (Local time)</span>
                       </p>
                     </div>
 
-                    <div className="border border-border/40 rounded-lg bg-accent/10 p-3">
-                      <p className="text-xs text-muted-foreground">Organizer</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <div className="w-5 h-5 rounded-full bg-accent/30 overflow-hidden border border-border/40">
-                          {featuredArtistImage ? (
-                            <img
-                              src={featuredArtistImage}
-                              alt={featuredConcert?.artist?.name || 'Organizer'}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-[9px] font-black text-foreground">
-                              {String(featuredConcert?.artist?.name || 'EV').slice(0, 2).toUpperCase()}
-                            </div>
-                          )}
-                        </div>
-                        <p className="text-sm text-foreground line-clamp-1">
-                          {featuredConcert?.artist?.name || 'Organizer'}
-                        </p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
+                        <Tag className="w-4 h-4 text-primary" />
                       </div>
+                      <p className="text-sm text-foreground line-clamp-1">
+                        {featuredTags.length
+                          ? featuredTags.map((t) => t.name).join(', ')
+                          : 'No tags'}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
+                        <MapPin className="w-4 h-4 text-primary" />
+                      </div>
+                      <p className="text-sm text-foreground line-clamp-1">
+                        {featuredVenueAddress || 'TBD'}
+                      </p>
                     </div>
                   </div>
                 </div>
+
+                <div className="w-full md:w-56 flex flex-col gap-3">
+                  <div className="border border-border/40 rounded-lg bg-accent/10 p-3">
+                    <p className="text-xs text-muted-foreground">Policy</p>
+                    <p className="text-sm text-foreground mt-2 line-clamp-1">
+                      {(featuredConcert?.artist?.name || 'Event') + ' Policy'}
+                    </p>
+                  </div>
+
+                  <div className="border border-border/40 rounded-lg bg-accent/10 p-3">
+                    <p className="text-xs text-muted-foreground">Organizer</p>
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="w-5 h-5 rounded-full bg-accent/30 overflow-hidden border border-border/40">
+                        {featuredArtistImage ? (
+                          <img
+                            src={featuredArtistImage}
+                            alt={featuredConcert?.artist?.name || 'Organizer'}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-[9px] font-black text-foreground">
+                            {String(featuredConcert?.artist?.name || 'EV').slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-sm text-foreground line-clamp-1">
+                        {featuredConcert?.artist?.name || 'Organizer'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Stats Sidebar */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className="lg:col-span-3 space-y-4 md:space-y-6">
           <div className="backdrop-blur-[25px] bg-card/20 border border-border/40 rounded-xl p-5 h-full flex flex-col">
             <h3 className="text-base font-semibold text-foreground mb-6">Event Summary</h3>
 
@@ -610,10 +610,10 @@ export default function DashboardContent() {
 
       {/* Bottom Section: Events Table */}
       <div className="bg-card/40 border border-border/50 rounded-3xl overflow-hidden">
-        <div className="p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div className="flex items-center gap-8">
-            <h2 className="text-xl font-black tracking-tight">Events ({filteredConcerts.length.toLocaleString()})</h2>
-            <div className="relative group min-w-[350px]">
+        <div className="p-4 md:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 w-full md:w-auto">
+            <h2 className="text-lg md:text-xl font-black tracking-tight">Events ({filteredConcerts.length.toLocaleString()})</h2>
+            <div className="relative group w-full sm:w-auto sm:min-w-[280px]">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
               <input
                 type="text"

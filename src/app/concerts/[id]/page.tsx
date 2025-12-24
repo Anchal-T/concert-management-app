@@ -177,12 +177,12 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
   ];
 
   return (
-    <div className="max-w-[1600px] mx-auto space-y-5 animate-in fade-in duration-500">
+    <div className="max-w-[1600px] mx-auto space-y-4 md:space-y-5 animate-in fade-in duration-500">
       {/* Top Row: Hero + Event Summary */}
-      <div className="flex gap-5">
+      <div className="flex flex-col lg:flex-row gap-4 md:gap-5">
         {/* Main Hero Card */}
         <div
-          className="flex-1 rounded-xl p-5 pb-8 relative overflow-hidden"
+          className="flex-1 rounded-xl p-4 md:p-5 pb-6 md:pb-8 relative overflow-hidden"
           style={{
             background: 'radial-gradient(59.96% 88.85% at 100% 99.92%, rgba(0, 133, 254, 0.1) 0%, rgba(0, 133, 254, 0) 100%), radial-gradient(111.15% 100% at 49.9% 0%, rgba(198, 225, 255, 0.08) 0%, rgba(198, 225, 255, 0.04) 100%)',
             backdropFilter: 'blur(25px)',
@@ -215,9 +215,9 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
           </div>
 
           {/* Event Title Row */}
-          <div className="mt-16 flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 flex-wrap">
+          <div className="mt-14 md:mt-16 flex flex-col md:flex-row items-start justify-between gap-4">
+            <div className="flex-1 w-full">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 flex-wrap">
                 <h1 className="text-2xl font-bold text-white">{eventTitle}</h1>
                 <div
                   className="flex items-center gap-2 px-3 py-1 rounded-full text-sm"
@@ -228,7 +228,7 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex items-center gap-2 ml-auto">
+                <div className="flex items-center gap-2 sm:ml-auto mt-3 sm:mt-0">
                   {isEventIdValid && (
                     <EditEventDialog
                       event={concert}
@@ -304,9 +304,9 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
           </p>
 
           {/* Event Details Row */}
-          <div className="flex flex-wrap gap-4 mt-6">
+          <div className="flex flex-col md:flex-row gap-4 mt-6">
             <div
-              className="flex-1 min-w-[300px] rounded-lg p-4"
+              className="flex-1 min-w-0 rounded-lg p-3 md:p-4"
               style={{ background: 'linear-gradient(91.18deg, rgba(255, 255, 255, 0.04) 2.64%, rgba(255, 255, 255, 0.02) 95.85%)' }}
             >
               <div className="space-y-3">
@@ -342,7 +342,7 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
             </div>
 
             {/* Policy & Organizer Cards */}
-            <div className="flex flex-col gap-3 min-w-[220px]">
+            <div className="flex flex-row md:flex-col gap-3 w-full md:w-auto md:min-w-[220px]">
               <div
                 className="rounded-lg p-3"
                 style={{ background: 'linear-gradient(91.18deg, rgba(255, 255, 255, 0.04) 2.64%, rgba(255, 255, 255, 0.02) 95.85%)' }}
@@ -374,7 +374,7 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
 
         {/* Event Summary Sidebar */}
         <div
-          className="w-52 rounded-xl p-5 flex flex-col"
+          className="w-full lg:w-52 rounded-xl p-4 md:p-5 flex flex-col"
           style={{
             background: 'radial-gradient(68.68% 83.22% at 50% 100%, rgba(0, 133, 254, 0.2) 0%, rgba(0, 133, 254, 0) 100%), radial-gradient(111.15% 100% at 49.9% 0%, rgba(198, 225, 255, 0.08) 0%, rgba(198, 225, 255, 0.04) 100%)',
             backdropFilter: 'blur(25px)',
@@ -382,7 +382,7 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
         >
           <h3 className="text-white font-semibold text-base mb-4">Event Summary</h3>
 
-          <div className="flex-1 flex flex-col justify-between gap-3">
+          <div className="flex-1 flex flex-row lg:flex-col justify-between gap-3">
             {summaryStats.map((stat, idx) => (
               <div
                 key={stat.label}
@@ -428,10 +428,10 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
       </div>
 
       {/* Teams + Tags Row */}
-      <div className="flex gap-3">
+      <div className="flex flex-col md:flex-row gap-3">
         {/* Teams Card */}
         <div
-          className="w-80 rounded-xl p-5"
+          className="w-full md:w-80 rounded-xl p-4 md:p-5"
           style={{
             background: 'radial-gradient(59.96% 88.85% at 100% 99.92%, rgba(0, 133, 254, 0.1) 0%, rgba(0, 133, 254, 0) 100%), radial-gradient(111.15% 100% at 49.9% 0%, rgba(198, 225, 255, 0.08) 0%, rgba(198, 225, 255, 0.04) 100%)',
             backdropFilter: 'blur(25px)',
@@ -517,10 +517,10 @@ export default function ConcertDetailsPage({ params }: { params: Promise<{ id: s
       >
         <Tabs defaultValue="collections" className="w-full">
           <div
-            className="px-6 py-1"
+            className="px-4 md:px-6 py-1 overflow-x-auto"
             style={{ background: 'linear-gradient(91.18deg, rgba(255, 255, 255, 0.1) 2.64%, rgba(255, 255, 255, 0.05) 95.85%)' }}
           >
-            <TabsList className="bg-transparent h-12 gap-0">
+            <TabsList className="bg-transparent h-12 gap-0 w-max min-w-full">
               <TabsTrigger
                 value="collections"
                 className="data-[state=active]:bg-white/10 data-[state=inactive]:bg-transparent text-white/60 data-[state=active]:text-white rounded-md px-6 py-2 text-sm font-medium"

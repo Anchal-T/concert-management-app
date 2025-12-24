@@ -24,6 +24,14 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import { ScheduleConcertDialog } from './ScheduleConcertDialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table';
 
 export function ConcertsList() {
   const [concerts, setConcerts] = useState<any[]>([]);
@@ -50,13 +58,13 @@ export function ConcertsList() {
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     try {
       const res = await fetch(`/api/events/${id}`, {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error('Failed to delete');
-      
+
       toast.success('Concert registration cancelled');
       fetchConcerts();
     } catch (error) {
@@ -92,10 +100,10 @@ export function ConcertsList() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div className="flex items-center gap-8">
-          <h2 className="text-2xl font-black tracking-tight">Events ({concerts.length})</h2>
-          <div className="relative group min-w-[350px]">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 w-full md:w-auto">
+          <h2 className="text-xl md:text-2xl font-black tracking-tight">Events ({concerts.length})</h2>
+          <div className="relative group w-full sm:w-auto sm:min-w-[280px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <input
               type="text"
@@ -168,9 +176,9 @@ export function ConcertsList() {
                         <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-accent/50 rounded-xl">
                           <MoreHorizontal className="w-5 h-5" />
                         </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           className="h-9 w-9 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10 rounded-xl"
                           onClick={(e) => handleDelete(concert.id, e)}
                         >
@@ -185,97 +193,6 @@ export function ConcertsList() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-  return (
-    <div className="grid grid-cols-1 gap-6">
-      {concerts.map((concert) => (
-        <Link key={concert.id} href={`/concerts/${concert.id}`}>
-          <Card className="overflow-hidden bg-card border-border hover:border-primary/30 transition-all duration-300 group shadow-sm hover:shadow-xl hover:shadow-primary/5 rounded-3xl">
-            <CardContent className="p-0">
-              <div className="flex flex-col lg:flex-row">
-                {/* Visual Area */}
-                <div className="w-full lg:w-72 h-48 lg:h-auto relative overflow-hidden bg-accent">
-                  {concert.artist?.imageUrl || concert.artist?.image_url ? (
-                    <img 
-                      src={concert.artist?.imageUrl || concert.artist?.image_url} 
-                      alt={concert.artist.name} 
-                      className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700" 
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-primary/20 to-accent">
-                      <Music className="w-12 h-12 text-primary/30" />
-                    </div>
-                  )}
-                  <div className="absolute top-4 left-4 z-10">
-                    {getStatusBadge(concert.status)}
-                  </div>
-                  <div className="absolute inset-0 bg-linear-to-r from-black/60 via-transparent to-transparent lg:hidden" />
-                </div>
-                
-                {/* Content Area */}
-                <div className="flex-1 p-8 flex flex-col justify-between">
-                  <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-primary text-xs font-black uppercase tracking-[0.2em] mb-2">
-                        <MonitorPlay className="w-3 h-3" />
-                        Live Event
-                      </div>
-                      <h3 className="text-3xl font-black text-foreground tracking-tight group-hover:text-primary transition-colors">
-                        {concert.artist?.name}
-                      </h3>
-                      <p className="text-muted-foreground flex items-center font-medium">
-                        <MapPin className="w-4 h-4 mr-1.5 text-primary/50" />
-                        {concert.venue?.name}, {concert.venue?.city}
-                      </p>
-                    </div>
-                    
-                    <div className="bg-accent/30 rounded-2xl p-4 border border-border sm:text-right min-w-[140px]">
-                      <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest mb-1">Entry Price</p>
-                      <div className="flex items-center sm:justify-end gap-1.5">
-                        <Ticket className="w-4 h-4 text-emerald-500" />
-                        <span className="text-2xl font-black text-foreground">
-                          {concert.price ? `$${concert.price}` : (concert.ticket_price ? `$${concert.ticket_price}` : 'TBD')}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-8 pt-6 border-t border-border flex flex-wrap items-center justify-between gap-6">
-                    <div className="flex items-center gap-8">
-                      <div className="flex items-center text-sm font-semibold text-foreground">
-                        <Calendar className="w-4 h-4 mr-2.5 text-primary" />
-                        {concert.date && !isNaN(new Date(concert.date).getTime()) ? format(new Date(concert.date), 'PPPP') : 'Date TBD'}
-                      </div>
-                      <div className="flex items-center text-sm font-semibold text-foreground">
-                        <Clock className="w-4 h-4 mr-2.5 text-primary" />
-                         {/* Extract time from date or use dummy */}
-                         {concert.date && !isNaN(new Date(concert.date).getTime()) ? format(new Date(concert.date), 'h:mm a') : '19:00'}
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-10 w-10 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10" 
-                        onClick={(e) => handleDelete(concert.id, e)}
-                      >
-                        <Trash2 className="w-4.5 h-4.5" />
-                      </Button>
-                      <Button variant="outline" className="rounded-xl font-bold group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-                        Manage Event <ChevronRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </Link>
-      ))}
     </div>
   );
 }

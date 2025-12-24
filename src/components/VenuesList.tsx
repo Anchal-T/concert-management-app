@@ -84,10 +84,10 @@ export function VenuesList() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div className="flex items-center gap-8">
-          <h2 className="text-2xl font-black tracking-tight">Venues ({venues.length})</h2>
-          <div className="relative group min-w-[350px]">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-8 w-full md:w-auto">
+          <h2 className="text-xl md:text-2xl font-black tracking-tight">Venues ({venues.length})</h2>
+          <div className="relative group w-full sm:w-auto sm:min-w-[280px]">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <input
               type="text"
